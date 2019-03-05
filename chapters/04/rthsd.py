@@ -33,13 +33,18 @@ def func(incoming, outgoing, data):
         d[i] = np.subtract(*[ systems[x].mean() for x in i ])
 
     while True:
-        _ = incoming.get()
+        task = incoming.get()
 
-        x = systems.shuffle().mean(axis=0)
-        d_ = x.max() - x.min()
-        for j in systems.pairs():
-            if d_ >= abs(d[j]):
-                outgoing.put(j)
+        if task is None:
+            x = systems.shuffle().mean(axis=0)
+            d_ = x.max() - x.min()
+            for j in systems.pairs():
+                if d_ >= abs(d[j]):
+                    outgoing.put(j)
+        else:
+            (counts, B) = task
+            for i in systems.pairs():
+                print(*i, ':', d[i], counts[i] / args.B)
 
         outgoing.put(None)
 
@@ -56,7 +61,7 @@ outgoing = mp.Queue()
 
 with mp.Pool(args.workers, func, (outgoing, incoming, args.systems)):
     for i in range(args.B):
-        outgoing.put(i)
+        outgoing.put(None)
 
     jobs = args.B
     count = cl.Counter()
@@ -67,8 +72,4 @@ with mp.Pool(args.workers, func, (outgoing, incoming, args.systems)):
         else:
             count[pair] += 1
 
-systems = Systems(args.systems)
-p_value = { x: count[x] / args.B for x in systems.pairs() }
-
-for (i, j) in p_value.items():
-    print(*i, ':', j)
+    outgoing.put((count, args.B))
