@@ -9,14 +9,18 @@ import numpy as np
 
 class Systems:
     def __init__(self, data):
-        self.data = np.loadtxt(data, delimiter=',', skiprows=1)
+        with data.open() as fp:
+            cols = fp.readline().rstrip().split(',')
+            self.columns = { y: x for (x, y) in enumerate(cols) }
+            self.data = np.loadtxt(fp, delimiter=',')
         (self.runs, self.systems) = self.data.shape
 
     def __getitem__(self, key):
-        return self.data[:,key]
+        index = self.columns[key]
+        return self.data[:,index]
 
     def pairs(self):
-        yield from it.combinations(range(self.systems), r=2)
+        yield from it.combinations(self.columns, r=2)
 
     def shuffle(self):
         return np.apply_along_axis(np.random.permutation, 1, self.data)
