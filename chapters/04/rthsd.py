@@ -35,8 +35,7 @@ def func(incoming, outgoing, data):
     while True:
         _ = incoming.get()
 
-        U = systems.shuffle()
-        x = U.mean(axis=0)
+        x = systems.shuffle().mean(axis=0)
         d_ = x.max() - x.min()
         for j in systems.pairs():
             if d_ >= abs(d[j]):
