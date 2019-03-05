@@ -1,4 +1,3 @@
-import sys
 import itertools as it
 import collections as cl
 import multiprocessing as mp
