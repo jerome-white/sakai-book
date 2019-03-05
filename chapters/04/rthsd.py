@@ -13,7 +13,7 @@ class Systems:
             cols = fp.readline().rstrip().split(',')
             self.columns = { y: x for (x, y) in enumerate(cols) }
             self.data = np.loadtxt(fp, delimiter=',')
-        (self.runs, self.systems) = self.data.shape
+        # (self.runs, self.systems) = self.data.shape
 
     def __getitem__(self, key):
         index = self.columns[key]
