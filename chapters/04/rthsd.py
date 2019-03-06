@@ -1,3 +1,4 @@
+import sys
 import itertools as it
 import collections as cl
 import multiprocessing as mp
@@ -7,11 +8,10 @@ from argparse import ArgumentParser
 import numpy as np
 
 class Systems:
-    def __init__(self, data):
-        with data.open() as fp:
-            cols = fp.readline().rstrip().split(',')
-            self.columns = { y: x for (x, y) in enumerate(cols) }
-            self.data = np.loadtxt(fp, delimiter=',')
+    def __init__(self, fp):
+        cols = fp.readline().rstrip().split(',')
+        self.columns = { y: x for (x, y) in enumerate(cols) }
+        self.data = np.loadtxt(fp, delimiter=',')
         # (self.runs, self.systems) = self.data.shape
 
     def __getitem__(self, key):
@@ -24,32 +24,26 @@ class Systems:
     def shuffle(self):
         return np.apply_along_axis(np.random.permutation, 1, self.data)
 
-def func(incoming, outgoing, data):
-    systems = Systems(args.systems)
+    def differences(self):
+        for i in self.pairs():
+            yield (i, np.subtract(*[ self[x].mean() for x in i ]))
 
-    d = {}
-    for i in systems.pairs():
-        d[i] = np.subtract(*[ systems[x].mean() for x in i ])
+def func(incoming, outgoing, systems):
+    d = dict(systems.differences())
 
     while True:
         task = incoming.get()
 
-        if task is None:
-            x = systems.shuffle().mean(axis=0)
-            d_ = x.max() - x.min()
-            for j in systems.pairs():
-                if d_ >= abs(d[j]):
-                    outgoing.put(j)
-        else:
-            (counts, B) = task
-            for i in systems.pairs():
-                print(*i, ':', d[i], counts[i] / args.B)
+        x = systems.shuffle().mean(axis=0)
+        d_ = x.max() - x.min()
+        for j in systems.pairs():
+            if d_ >= abs(d[j]):
+                outgoing.put(j)
 
         outgoing.put(None)
 
 arguments = ArgumentParser()
 arguments.add_argument('--B', type=int, default=0)
-arguments.add_argument('--systems', type=Path)
 arguments.add_argument('--workers', type=int)
 args = arguments.parse_args()
 
@@ -57,8 +51,9 @@ assert(args.B > 0)
 
 incoming = mp.JoinableQueue()
 outgoing = mp.Queue()
+systems = Systems(sys.stdin)
 
-with mp.Pool(args.workers, func, (outgoing, incoming, args.systems)):
+with mp.Pool(args.workers, func, (outgoing, incoming, systems)):
     for i in range(args.B):
         outgoing.put(None)
 
@@ -71,4 +66,5 @@ with mp.Pool(args.workers, func, (outgoing, incoming, args.systems)):
         else:
             count[pair] += 1
 
-    outgoing.put((count, args.B))
+for (i, j) in systems.differences():
+    print(*i, ':', j, count[i] / args.B)
