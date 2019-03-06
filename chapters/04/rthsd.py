@@ -33,7 +33,7 @@ def func(incoming, outgoing, systems):
     d = dict(systems.differences())
 
     while True:
-        task = incoming.get()
+        _ = incoming.get()
 
         x = systems.shuffle().mean(axis=0)
         d_ = x.max() - x.min()
