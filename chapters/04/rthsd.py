@@ -1,4 +1,5 @@
 import sys
+import csv
 import itertools as it
 import collections as cl
 import multiprocessing as mp
@@ -66,5 +67,14 @@ with mp.Pool(args.workers, func, (outgoing, incoming, systems)):
         else:
             count[pair] += 1
 
+fieldnames = [
+    'system_1',
+    'system_2',
+    'difference',
+    'p-value',
+]
+writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+writer.writeheader()
 for (i, j) in systems.differences():
-    print(*i, ':', j, count[i] / args.B)
+    row = (*i, j, count[i] / args.B)
+    writer.writerow(dict(zip(fieldnames, row)))
