@@ -13,9 +13,9 @@ class ESSystems(Systems):
     def __init__(self, fp):
         super().__init__(fp)
 
-        axes = it.chain((None, ), range(2))
+        axes = it.chain(range(2), (None, ))
         mean = lambda x: self.data.mean(axis=x)
-        (self.m_mean, self.s_mean, self.t_mean) = map(mean, axes)
+        (self.s_mean, self.t_mean, self.m_mean) = map(mean, axes)
 
     def S(self):
         for (i, m) in enumerate(self.s_mean):
