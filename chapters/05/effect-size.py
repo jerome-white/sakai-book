@@ -19,8 +19,9 @@ class ESSystems(Systems):
 
     def S(self):
         for (i, m) in enumerate(self.s_mean):
+            x = self.m_mean - m
             for (j, n) in enumerate(self.t_mean):
-                yield (self.data[(j, i)] - m - n + self.m_mean) ** 2
+                yield (self.data[(j, i)] - n + x) ** 2
 
     def phi(self):
         return op.mul(*[ x - 1 for x in self.data.shape ])
