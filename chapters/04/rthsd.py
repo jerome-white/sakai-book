@@ -8,26 +8,11 @@ from argparse import ArgumentParser
 
 import numpy as np
 
-class Systems:
-    def __init__(self, fp):
-        cols = fp.readline().rstrip().split(',')
-        self.columns = { y: x for (x, y) in enumerate(cols) }
-        self.data = np.loadtxt(fp, delimiter=',')
-        # (self.runs, self.systems) = self.data.shape
+from irstats.systems import Systems
 
-    def __getitem__(self, key):
-        index = self.columns[key]
-        return self.data[:,index]
-
-    def pairs(self):
-        yield from it.combinations(self.columns, r=2)
-
+class RandomisedSystems(Systems):
     def shuffle(self):
         return np.apply_along_axis(np.random.permutation, 1, self.data)
-
-    def differences(self):
-        for i in self.pairs():
-            yield (i, np.subtract(*[ self[x].mean() for x in i ]))
 
 def func(incoming, outgoing, systems):
     d = dict(systems.differences())
@@ -52,7 +37,7 @@ assert(args.B > 0)
 
 incoming = mp.JoinableQueue()
 outgoing = mp.Queue()
-systems = Systems(sys.stdin)
+systems = RandomisedSystems(sys.stdin)
 
 with mp.Pool(args.workers, func, (outgoing, incoming, systems)):
     for i in range(args.B):
