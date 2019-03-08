@@ -17,9 +17,9 @@ $> cd sakai-book
 $> export PYTHONPATH=`pwd`:$PYTHONPATH
 ```
 
-Unless otherwise noted, all scripts read results from `stdin`,
-assuming a CSV format in which columns are systems and rows are
-topics. The first row of the system is assumed to be the system name.
+Unless otherwise noted, all scripts read results from `stdin`. They
+assume a CSV format in which columns are systems and rows are
+topics. The first row of the input is assumed to be the system names.
 
 # References
 
