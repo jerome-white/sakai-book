@@ -1,10 +1,10 @@
 # sakai-book
 
-Implementaions of statistical methods from (Tetsuya
-Sakai)[http://sakailab.com/tetsuya/]'s (Laboratory Experiments in
+Implementaions of statistical methods from [Tetsuya
+Sakai](http://sakailab.com/tetsuya/)'s [Laboratory Experiments in
 Information Retrieval: Sample Sizes, Effect Sizes, and Statistical
-Power)[http://sakailab.com/leirbook/]
-((AMZN)[https://www.amazon.com/dp/9811311986])
+Power](http://sakailab.com/leirbook/)
+([AMZN](https://www.amazon.com/dp/9811311986))
 
 # HOWTO
 
