@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 
 import numpy as np
 
-from irstats.systems import Systems
+from irstats import Systems
 
 class RandomisedSystems(Systems):
     def shuffle(self):

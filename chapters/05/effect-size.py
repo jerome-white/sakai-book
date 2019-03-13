@@ -2,7 +2,7 @@ import sys
 import csv
 import math
 
-from irstats.systems import VarianceSystems
+from irstats import VarianceSystems
 
 systems = VarianceSystems(sys.stdin)
 deviation = math.sqrt(systems.V())
