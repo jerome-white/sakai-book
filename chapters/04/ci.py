@@ -7,24 +7,18 @@ import collections as cl
 from argparse import ArgumentParser
 
 import numpy as np
-from scipy.stats import t
 
-from irstats.systems import VarianceSystems
+import irstats as irs
 
 arguments = ArgumentParser()
-arguments.add_argument('--confidence', type=float, default=0.95)
+arguments.add_argument('--alpha', type=float, default=0.95)
 args = arguments.parse_args()
 
-assert(0 <= args.confidence <= 1)
+assert(0 <= args.alpha <= 1)
 
-systems = VarianceSystems(sys.stdin)
-
-#
-# EXCEL::T.INV.2T(p, df) == t.ppf((1 + (1 - p)) / 2, df)
-#
-t_inv = t.ppf((1 + args.confidence) / 2, systems.topics)
-
-MOE = t_inv * math.sqrt(systems.V() / systems.topics)
+systems = irs.VarianceSystems(sys.stdin)
+inv = irs.QInverse(args.alpha, systems.phi(), systems.systems)
+MOE = float(inv) * math.sqrt(systems.V() / systems.topics)
 
 fieldnames = [
     'system_1',
