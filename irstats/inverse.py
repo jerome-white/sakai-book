@@ -33,6 +33,9 @@ class TInverse(Inverse):
     def inv(self):
         return stats.t.ppf(1 - self.p, self.df)
 
+#
+# https://stat.ethz.ch/R-manual/R-patched/library/stats/html/Tukey.html
+#
 class QInverse(Inverse):
     def __init__(self, alpha, df, systems):
         super().__init__(alpha, df)
