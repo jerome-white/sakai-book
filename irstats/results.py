@@ -1,13 +1,15 @@
 import itertools as it
+import collections as cl
 from pathlib import Path
 
 import pandas as pd
 
 __all__ = [
+    'Score',
     'Results',
 ]
 
-Evaluation = cl.namedtuple('Evaluation', 'system, topic, metric')
+Score = cl.namedtuple('Score', 'system, topic, score')
 PairVal = cl.namedtuple('PairVal', 'system_1, system_2, value')
 
 class Results:
