@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 class Inverse:
-    def __init__(self, alpha, df, tail=True):
+    def __init__(self, alpha, df):
         self.alpha = alpha
         self.df = df
 
