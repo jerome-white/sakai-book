@@ -18,7 +18,8 @@ class Results:
         self.df = (pd
                    .DataFrame
                    .from_records(scores)
-                   .pivot(index='topic', columns='system', values='score'))
+                   .pivot(index='topic', columns='system', values='score')
+                   .astype(float))
 
     def ispaired(self):
         return self.df.isna().sum().any()
