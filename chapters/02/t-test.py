@@ -20,7 +20,7 @@ def t_inv(phi, P):
 # def q_inv(P):
 #     return st.norm.ppf(1 - P)
 
-class TTest:
+class T:
     def __init__(self, results, alpha):
         assert(results.isgroupeq())
 
@@ -65,7 +65,7 @@ args = arguments.parse_args()
 assert(0 <= args.alpha <= 1)
 
 results = irs.Results.from_csv(sys.stdin)
-t = TTest(results, args.alpha)
+t = T(results, args.alpha)
 
 writer = csv.DictWriter(sys.stdout, fieldnames=t.fieldnames)
 writer.writeheader()
