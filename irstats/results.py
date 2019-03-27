@@ -22,7 +22,7 @@ class Results:
                    .astype(float))
 
     def ispaired(self):
-        return self.df.isna().sum().any()
+        return not self.df.isna().sum().any()
 
     def isgroupeq(self):
         return len(self.df.count().unique()) < 2
