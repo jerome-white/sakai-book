@@ -42,8 +42,16 @@ class Results:
 
     @classmethod
     def from_csv(cls, data):
-        with data.open() as fp:
-            scores = csv.DictReader(fp)
-            assert(all([ x in scores.fieldnames for x in Score._fields ]))
+        try:
+            fp = open(data)
+        except TypeError:
+            fp = data
 
-            return cls(scores)
+        scores = csv.DictReader(fp)
+        assert(all([ x in scores.fieldnames for x in Score._fields ]))
+        results = cls(scores)
+
+        if fp != data:
+            fp.close()
+
+        return results
