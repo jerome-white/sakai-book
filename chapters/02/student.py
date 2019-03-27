@@ -40,8 +40,8 @@ class TwoSample:
 
             x = i.values()
             (n1, n2) = map(len, x)
-            xbar = [ np.mean(i) for i in x ]
-            S = [ sum(np.square(op.sub(*i))) for i in zip(x, xbar) ]
+            xbar = [ np.mean(y) for y in x ]
+            S = [ sum(np.square(np.subtract(*y))) for y in zip(x, xbar) ]
 
             df = n1 + n2 - 2
 
