@@ -22,7 +22,7 @@ def t_inv(phi, P):
 
 class T:
     def __init__(self, results, alpha):
-        assert(results.isgroupeq())
+        assert(results.ispaired())
 
         self.results = results
         self.alpha = alpha
