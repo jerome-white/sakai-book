@@ -22,7 +22,7 @@ def q_inv(P):
 class TTest:
     def __init__(self, results, alpha):
         assert(results.isgroupeq())
-        
+
         self.results = results
         self.alpha = alpha
         self.fieldnames = (
@@ -47,8 +47,8 @@ class TTest:
             d_bar = np.mean(d_j)
             V_d = sum(np.square(d_j - d_bar)) / df
             t_0 = d_bar / np.sqrt(V_d / n)
-            
-            difference = op.sub(*map(np.mean, i.values()))            
+
+            difference = op.sub(*map(np.mean, i.values()))
 
             t_0_ = abs(t_0)
             reject = int(t_0_ >= t_inv(df, self.alpha))
@@ -56,7 +56,7 @@ class TTest:
 
             output = (*i.keys(), difference, t_0, df, p, reject)
             yield dict(zip(self.fieldnames, output))
-            
+
 arguments = ArgumentParser()
 arguments.add_argument('--alpha', type=float, default=0.95)
 args = arguments.parse_args()
