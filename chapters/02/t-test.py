@@ -17,8 +17,8 @@ logging.basicConfig(level=logging.INFO,
 def t_inv(phi, P):
     return st.t.ppf((1 - P) / 2, phi)
 
-def q_inv(P):
-    return st.norm.ppf(1 - P)
+# def q_inv(P):
+#     return st.norm.ppf(1 - P)
 
 class TTest:
     def __init__(self, results, alpha):
