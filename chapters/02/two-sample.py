@@ -17,19 +17,17 @@ logging.basicConfig(level=logging.INFO,
 def t_inv(phi, P):
     return st.t.ppf((1 - P) / 2, phi)
 
-def q_inv(P):
-    return st.norm.ppf(1 - P)
-
-class TTest:
+class TwoSample:
     def __init__(self, results, alpha):
-        assert(results.isgroupeq())
+        # assert(not results.ispaired())
 
         self.results = results
         self.alpha = alpha
         self.fieldnames = (
             'system_1',
             'system_2',
-            'difference',
+            'mean_1',
+            'mean_2',
             't',
             'df',
             'p-value',
@@ -38,24 +36,23 @@ class TTest:
 
     def __iter__(self):
         for i in self.results.systems():
-            logging.debug(st.ttest_rel(*i.values()))
+            logging.debug(st.ttest_ind(*i.values(), equal_var=True))
 
-            dj = np.subtract(*i.values())
-            n = len(dj)
-            df = n - 1
+            x = i.values()
+            (n1, n2) = map(len, x)
+            xbar = [ np.mean(i) for i in x ]
+            S = [ sum(np.square(op.sub(*i))) for i in zip(x, xbar) ]
 
-            # Equations 2.4, 2.5, and 2.6, respectively
-            dbar = np.mean(dj)
-            Vd = sum(np.square(dj - dbar)) / df
-            t0 = dbar / math.sqrt(Vd / n)
+            df = n1 + n2 - 2
 
-            difference = op.sub(*map(np.mean, i.values()))
+            Vp = sum(S) / df
+            t0 = op.sub(*xbar) / math.sqrt(Vp * (1 / n1 + 1 / n2))
 
             t0_ = abs(t0)
             reject = int(t0_ >= t_inv(df, self.alpha))
             p = st.t.sf(t0_, df) * 2
 
-            output = (*i.keys(), difference, t0, df, p, reject)
+            output = (*i.keys(), *xbar, t0, df, p, reject)
             yield dict(zip(self.fieldnames, output))
 
 arguments = ArgumentParser()
@@ -65,7 +62,7 @@ args = arguments.parse_args()
 assert(0 <= args.alpha <= 1)
 
 results = irs.Results.from_csv(sys.stdin)
-t = TTest(results, args.alpha)
+t = TwoSample(results, args.alpha)
 
 writer = csv.DictWriter(sys.stdout, fieldnames=t.fieldnames)
 writer.writeheader()
