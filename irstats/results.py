@@ -27,13 +27,15 @@ class Results:
     def isgroupeq(self):
         return len(self.df.count().unique()) < 2
 
-    def pairs(self):
-        yield from it.combinations(self.df.columns, r=2)
+    def systems(self, n=2):
+        for i in it.combinations(self.df.columns, r=n):
+            j = [ self.df[x].tolist() for x in i ]
+            yield dict(zip(i, j))
 
-    def differences(self):
-        items = self.df.mean().iteritems()
-        for ((i, x), (j, y)) in it.combinations(items, r=2):
-            yield PairVal(i, j, x - y)
+    # def differences(self, stat):
+    #     items = op.methodcaller(stat)(self.df).iteritems()
+    #     for ((i, x), (j, y)) in it.combinations(items, r=2):
+    #         yield PairVal(i, j, x - y)
 
     def sizes(self):
         yield from self.df.count().items()
