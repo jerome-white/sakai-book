@@ -15,10 +15,7 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%H:%M:%S')
 
 def t_inv(phi, P):
-    return st.t.ppf((1 - P) / 2, phi)
-
-# def q_inv(P):
-#     return st.norm.ppf(1 - P)
+    return st.t.ppf(1 - (1 - P) / 2, phi)
 
 class T:
     def __init__(self, results, alpha):
@@ -34,6 +31,8 @@ class T:
             'df',
             'p-value',
             'reject',
+            'left_ci',
+            'right_ci',
         )
 
     def __iter__(self):
@@ -47,15 +46,20 @@ class T:
             # Equations 2.4, 2.5, and 2.6, respectively
             dbar = np.mean(dj)
             Vd = sum(np.square(dj - dbar)) / df
-            t0 = dbar / math.sqrt(Vd / n)
+            variance = math.sqrt(Vd / n)
+            t0 = dbar / variance
 
             difference = op.sub(*map(np.mean, i.values()))
 
             t0_ = abs(t0)
-            reject = int(t0_ >= t_inv(df, self.alpha))
+            inverse = t_inv(df, self.alpha)
+            reject = int(t0_ >= inverse)
             p = st.t.sf(t0_, df) * 2
 
-            output = (*i.keys(), difference, t0, df, p, reject)
+            moe = inverse * variance
+            ci = [ f(dbar, moe) for f in (op.sub, op.add) ]
+
+            output = (*i.keys(), difference, t0, df, p, reject, *ci)
             yield dict(zip(self.fieldnames, output))
 
 arguments = ArgumentParser()

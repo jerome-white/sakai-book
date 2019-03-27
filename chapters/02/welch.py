@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%H:%M:%S')
 
 def t_inv(phi, P):
-    return st.t.ppf((1 - P) / 2, phi)
+    return st.t.ppf(1 - (1 - P) / 2, phi)
 
 class Welch:
     def __init__(self, results, alpha):
@@ -33,6 +33,8 @@ class Welch:
             'df',
             'p-value',
             'reject',
+            'left_ci',
+            'right_ci',
         )
 
     def __iter__(self):
@@ -45,20 +47,26 @@ class Welch:
 
             V = []
             for (j, k, l) in zip(x, xbar, n):
-                variance = sum(np.square(np.subtract(j, k))) / (l - 1)
-                V.append(variance)
+                value = sum(np.square(np.subtract(j, k))) / (l - 1)
+                V.append(value)
 
             V_n = sum(it.starmap(op.truediv, zip(V, n)))
+            variance = math.sqrt(V_n)
 
             df = V_n ** 2 / sum([ (j / k) ** 2 / (k - 1) for (j, k) in zip(V, n) ])
 
-            tw0 = op.sub(*xbar) / math.sqrt(V_n)
+            tw0 = op.sub(*xbar) / variance
 
             tw0_ = abs(tw0)
-            reject = int(tw0_ >= t_inv(df, self.alpha))
+            inverse = t_inv(df, self.alpha)
+            reject = int(tw0_ >= inverse)
             p = st.t.sf(tw0_, df) * 2
 
-            output = (*i.keys(), *xbar, tw0, df, p, reject)
+            moe = inverse * variance
+            difference = op.sub(*xbar)
+            ci = [ f(difference, moe) for f in (op.sub, op.add) ]
+
+            output = (*i.keys(), *xbar, tw0, df, p, reject, *ci)
             yield dict(zip(self.fieldnames, output))
 
 arguments = ArgumentParser()
