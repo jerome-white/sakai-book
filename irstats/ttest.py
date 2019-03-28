@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%H:%M:%S')
 
 class T:
-    def __init__(self, results, alpha):
-        self.results = results
+    def __init__(self, scores, alpha):
+        self.scores = scores
         self.alpha = alpha
         self.fieldnames = [
             'system_1',
@@ -34,13 +34,13 @@ class T:
         ]
 
     def __iter__(self):
-        for i in self.results.systems():
+        for i in self.scores.systems():
             yield dict(zip(self.fieldnames, self.test(i)))
 
 class Paired(T):
-    def __init__(self, results, alpha):
-        assert(results.ispaired())
-        super().__init__(results, alpha)
+    def __init__(self, scores, alpha):
+        assert(scores.ispaired())
+        super().__init__(scores, alpha)
 
         self.fieldnames.extend([
             'difference',
@@ -72,9 +72,9 @@ class Paired(T):
         return (*i.keys(), t0, df, p, reject, *ci, difference)
 
 class Unpaired(T):
-    def __init__(self, results, alpha):
-        # assert(not results.ispaired())
-        super().__init__(results, alpha)
+    def __init__(self, scores, alpha):
+        # assert(not scores.ispaired())
+        super().__init__(scores, alpha)
 
         self.fieldnames.extend([
             'mean_1',

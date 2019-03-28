@@ -7,13 +7,13 @@ import pandas as pd
 
 __all__ = [
     'Score',
-    'Results',
+    'Scores',
 ]
 
 Score = cl.namedtuple('Score', 'system, topic, score')
 PairVal = cl.namedtuple('PairVal', 'system_1, system_2, value')
 
-class Results:
+class Scores:
     def __init__(self, scores):
         self.df = (pd
                    .DataFrame
