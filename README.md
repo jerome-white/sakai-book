@@ -8,8 +8,10 @@ Power](http://sakailab.com/leirbook/)
 
 # HOWTO
 
-All scripts within the *chapters* directory should be able to run
-standalone. Please set the PYTHONPATH appropriately:
+## As scripts
+
+All scripts within the *chapters* directory can be run
+standalone, from the command. First, set the PYTHONPATH appropriately:
 
 ```bash
 $> git clone https://github.com/jerome-white/sakai-book.git
@@ -17,18 +19,29 @@ $> cd sakai-book
 $> export PYTHONPATH=`pwd`:$PYTHONPATH
 ```
 
-Unless otherwise noted, all scripts read results from `stdin`.
+Depending on the test/chapter that the script is implementing, the exact command line arguments accepted by the script may differ. Use `--help` to understand what those options are. As an example:
 
-The book assumes results are stored in a matrix, where "systems" are
-columns and "topics" are rows; from Section 2.2, for example:
+```bash
+$> python chapters/02/t-test.py --help
+```
 
-> Let *x<sub>1j</sub>* denote the nDCG score of System 1 for the
-> *j*-th topic; similarly, let *x<sub>2j</sub>* denote the nDCG score
-> of System 2 for the *j*-th topic (*j* = 1, ..., *n*).
+Unless otherwise noted, all scripts read results from `stdin`. They assume input is "tidy" CSV, where each row contains a system identifer, a topic identifer, and a score. To that end, the first row should be the following header:
 
-As such, this repository assumes results are CSV files with this
-structure that come from `stdin`. It also assumes the first row of the
-input to be neames of the systems.
+```
+system,topic,score
+```
+
+Column order does not matter.
+
+## As API
+
+Scripts wishing to use the methods and tests provided by this library should first import irstats:
+
+```python
+import irstats as irs
+```
+
+From there the a `Scores` object should be created. Provide a list of `Score` [namedtuples](https://docs.python.org/3.7/library/collections.html#collections.namedtuple) to the `Scores` constructor to instantiate an instance. Specific tests can be run by passing an instance of that object.
 
 # References
 
