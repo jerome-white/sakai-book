@@ -6,7 +6,6 @@ from pathlib import Path
 import pandas as pd
 
 Score = cl.namedtuple('Score', 'system, topic, score')
-PairVal = cl.namedtuple('PairVal', 'system_1, system_2, value')
 
 class Scores:
     def __init__(self, scores):
@@ -26,11 +25,6 @@ class Scores:
         for i in it.combinations(self.df.columns, r=n):
             j = [ self.df[x].tolist() for x in i ]
             yield dict(zip(i, j))
-
-    # def differences(self, stat):
-    #     items = op.methodcaller(stat)(self.df).iteritems()
-    #     for ((i, x), (j, y)) in it.combinations(items, r=2):
-    #         yield PairVal(i, j, x - y)
 
     def sizes(self):
         yield from self.df.count().items()
