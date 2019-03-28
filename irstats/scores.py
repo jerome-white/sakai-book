@@ -5,11 +5,6 @@ from pathlib import Path
 
 import pandas as pd
 
-__all__ = [
-    'Score',
-    'Scores',
-]
-
 Score = cl.namedtuple('Score', 'system, topic, score')
 PairVal = cl.namedtuple('PairVal', 'system_1, system_2, value')
 

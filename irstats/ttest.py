@@ -8,12 +8,6 @@ import scipy.stats as st
 
 import irstats as irs
 
-__all__ = [
-    'Paired',
-    'Student',
-    'Welch',
-]
-
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S')
