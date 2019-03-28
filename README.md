@@ -30,14 +30,13 @@ $> python chapters/02/t-test.py --help
 Unless otherwise noted, all scripts read results from `stdin`. They
 assume input is [tidy](http://vita.had.co.nz/papers/tidy-data.html)
 CSV, where each row contains a system identifer, a topic identifer,
-and a score. To that end, the first row should be the following
-header:
+and a score. To distinguish which columns correspond to that
+information, the first row should be the following header in any
+order:
 
 ```
 system,topic,score
 ```
-
-Column order does not matter.
 
 ## As API
 
