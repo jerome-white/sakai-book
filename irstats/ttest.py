@@ -28,7 +28,7 @@ class T:
         ]
 
     def __iter__(self):
-        for i in self.scores.systems():
+        for i in self.scores.combinations():
             yield dict(zip(self.fieldnames, self.test(i)))
 
 class Paired(T):
