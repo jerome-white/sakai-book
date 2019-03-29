@@ -26,7 +26,7 @@ class Scores:
     def isreplicated(self):
         return self.df.index.duplicated.any()
 
-    def systems(self, n=2):
+    def combinations(self, n=2):
         for i in it.combinations(self.df.columns, r=n):
             j = [ self.df[x].tolist() for x in i ]
             yield dict(zip(i, j))
