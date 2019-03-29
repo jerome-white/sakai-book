@@ -8,13 +8,13 @@ import irstats as irs
 class OneWay:
     def __init__(self, scores, alpha):
         # assert(not scores.ispaired())
-        
+
         self.scores = scores
         self.alpha = alpha
 
     def test(self):
         s = self.scores()
-        
+
         xbar = s.sum().sum() / s.count().sum()
         ST = s.apply(lambda x: (x - xbar) ** 2, axis='columns').sum().sum()
         SA = (s
