@@ -31,8 +31,24 @@ class Scores:
             j = [ self.df[x].tolist() for x in i ]
             yield dict(zip(i, j))
 
-    # def sizes(self):
-    #     yield from self.df.count().items()
+    def systems(self):
+        return len(self.df.columns)
+
+    def topics(self):
+        if not self.ispaired():
+            raise ValueError('Scores are not paired')
+
+        return len(self.df.index.unique())
+
+    def replicants(self):
+        if not self.ispaired():
+            raise ValueError('Scores are not paired')
+
+        r = self.df.index.value_counts().unique().tolist()
+        if len(r) > 1:
+            raise ValueError('Replications not equal')
+
+        return r.pop()
 
     @classmethod
     def from_csv(cls, data):
