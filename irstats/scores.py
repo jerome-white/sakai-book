@@ -31,8 +31,8 @@ class Scores:
             j = [ self.df[x].tolist() for x in i ]
             yield dict(zip(i, j))
 
-    def sizes(self):
-        yield from self.df.count().items()
+    # def sizes(self):
+    #     yield from self.df.count().items()
 
     @classmethod
     def from_csv(cls, data):
