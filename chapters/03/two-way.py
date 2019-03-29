@@ -44,6 +44,12 @@ class WithoutReplication(Anova):
             F = j / VE2
             F0[i] = (F, int(F >= irs.F_inv(k, phiE2, self.alpha)))
 
+        VE2 = SE2 / phiE2
+        MOE = irs.t_inv(phiE2, self.alpha) * math.sqrt(VE2 / self.n)
+        ci = []
+        for i in s:
+            ci.append([ f(s[i].mean(), MOE) for f in (op.sub, op.add) ])
+
 class WithReplication(Anova):
     def __init__(self, scores, alpha):
         assert(scores.isreplicated())

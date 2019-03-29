@@ -12,6 +12,9 @@ class OneWay:
         self.scores = scores
         self.alpha = alpha
 
+        self.m = self.scores.systems()
+        self.b = self.scores.topics()
+
     def test(self):
         s = self.scores()
 
@@ -22,13 +25,17 @@ class OneWay:
               .sum())
         SE1 = ST - SA
 
-        m = len(s.columns)
-        phiA = m - 1
-        phiE1 = s.apply(lambda x: len(x) - m, axis='rows').sum()
+        phiA = self.m - 1
+        phiE1 = s.apply(lambda x: len(x) - self.m, axis='rows').sum()
 
         F0 = (SA / phiA) / (SE1 / phiE1)
+        reject = int(F0 >= irs.F_inv(phiA, phiE1, self.alpha))
 
-        reject = int(F0 >= irs.F_inv(self.alpha, phiA, phiE1))
+        VE1 = SE1 / phiE1
+        MOE = irs.t_inv(phiE1, self.alpha) * math.sqrt(VE1 / self.n)
+        ci = []
+        for i in s:
+            ci.append([ f(s[i].mean(), MOE) for f in (op.sub, op.add) ])
 
 arguments = ArgumentParser()
 arguments.add_argument('--alpha', type=float, default=0.95)
