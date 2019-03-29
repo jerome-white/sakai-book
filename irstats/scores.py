@@ -23,6 +23,9 @@ class Scores:
     def isgroupeq(self):
         return len(self.df.count().unique()) < 2
 
+    def isreplicated(self):
+        return self.df.index.duplicated.any()
+
     def systems(self, n=2):
         for i in it.combinations(self.df.columns, r=n):
             j = [ self.df[x].tolist() for x in i ]
