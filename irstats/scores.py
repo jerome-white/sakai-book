@@ -14,6 +14,9 @@ class Scores:
                    .pivot(index='topic', columns='system', values='score')
                    .astype(float))
 
+    def __call__(self):
+        return self.df
+
     def ispaired(self):
         return not self.df.isna().sum().any()
 
