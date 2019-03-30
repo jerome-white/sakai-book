@@ -30,6 +30,7 @@ class OneWay:
 
         F0 = (SA / phiA) / (SE1 / phiE1)
         reject = int(F0 >= irs.F_inv(phiA, phiE1, self.alpha))
+        p = st.f.sf(F0, phiA, phiE1)
 
         VE1 = SE1 / phiE1
         MOE = irs.t_inv(phiE1, self.alpha) * math.sqrt(VE1 / self.n)
