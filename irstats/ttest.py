@@ -8,10 +8,6 @@ import scipy.stats as st
 
 import irstats as irs
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s',
-                    datefmt='%H:%M:%S')
-
 class T:
     def __init__(self, scores, alpha):
         self.scores = scores
