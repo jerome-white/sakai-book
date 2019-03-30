@@ -13,7 +13,7 @@ class OneWay:
         self.alpha = alpha
 
         self.m = self.scores.systems()
-        self.b = self.scores.topics()
+        self.n = self.scores.topics()
 
     def test(self):
         s = self.scores()
