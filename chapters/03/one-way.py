@@ -1,9 +1,18 @@
 import sys
 import csv
+import math
+import logging
+import operator as op
 from argparse import ArgumentParser
+
+import scipy.stats as st
 
 import irstats as irs
 # from irstats import Scores
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S')
 
 class OneWay:
     def __init__(self, scores, alpha):
@@ -38,15 +47,33 @@ class OneWay:
         for i in s:
             ci.append([ f(s[i].mean(), MOE) for f in (op.sub, op.add) ])
 
+        logging.debug({
+            'm': self.m,
+            'n': self.n,
+            'phiA': phiA,
+            'phiE1': phiE1,
+        })
+        logging.debug({
+            'ST': ST,
+            'SE1': SE1,
+            'SA': SA,
+            'VA': SA / phiA,
+            'VE1': VE1,
+            'F0': F0,
+            'reject': reject,
+            'p-value': p,
+        })
+
 arguments = ArgumentParser()
 arguments.add_argument('--alpha', type=float, default=0.95)
 args = arguments.parse_args()
 
 assert(0 <= args.alpha <= 1)
 
-results = Scores.from_csv(sys.stdin)
-t = Paired(results, args.alpha)
+results = irs.Scores.from_csv(sys.stdin)
+t = OneWay(results, args.alpha)
+t.test()
 
-writer = csv.DictWriter(sys.stdout, fieldnames=t.fieldnames)
-writer.writeheader()
-writer.writerows(t)
+# writer = csv.DictWriter(sys.stdout, fieldnames=t.fieldnames)
+# writer.writeheader()
+# writer.writerows(t)
