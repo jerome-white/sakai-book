@@ -26,7 +26,7 @@ class OneWay:
         SE1 = ST - SA
 
         phiA = self.m - 1
-        phiE1 = s.apply(lambda x: len(x) - self.m, axis='rows').sum()
+        phiE1 = s.count().sum() - self.m
 
         F0 = (SA / phiA) / (SE1 / phiE1)
         reject = int(F0 >= irs.F_inv(phiA, phiE1, self.alpha))
