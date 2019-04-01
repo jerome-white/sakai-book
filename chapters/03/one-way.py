@@ -53,7 +53,7 @@ class OneWay:
             'phiA': phiA,
             'phiE1': phiE1,
         })
-        logging.debug({
+        logging.info({
             'ST': ST,
             'SE1': SE1,
             'SA': SA,
