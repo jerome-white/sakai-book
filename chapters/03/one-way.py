@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S')
 
-class OneWay:
+class OneWay_:
     def __init__(self, scores, alpha):
         # assert(not scores.ispaired())
 
@@ -71,9 +71,12 @@ args = arguments.parse_args()
 assert(0 <= args.alpha <= 1)
 
 results = irs.Scores.from_csv(sys.stdin)
-t = OneWay(results, args.alpha)
-t.test()
+# t = OneWay(results, args.alpha)
+# t.test()
 
-# writer = csv.DictWriter(sys.stdout, fieldnames=t.fieldnames)
-# writer.writeheader()
-# writer.writerows(t)
+writer = None
+for i in irs.OneWay(results, args.alpha):
+    if writer is None:
+        writer = csv.DictWriter(sys.stdout, fieldnames=i._fields)
+        writer.writeheader()
+    writer.writerow(i._asdict())
