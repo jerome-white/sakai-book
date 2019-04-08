@@ -58,7 +58,9 @@ class Scores:
             fp = data
 
         scores = csv.DictReader(fp)
-        assert(all([ x in scores.fieldnames for x in Score._fields ]))
+        if not all([ x in scores.fieldnames for x in Score._fields ]):
+            raise ValueError('Invalid header: received: {}, expecting: {}'
+                             .format(scores.fieldnames, Score._fields))
         results = cls(scores)
 
         if fp != data:
