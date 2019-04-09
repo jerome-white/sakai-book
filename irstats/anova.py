@@ -1,6 +1,7 @@
 import math
 import operator as op
 import itertools as it
+import functools as ft
 import collections as cl
 
 import numpy as np
@@ -80,6 +81,14 @@ class OneWay(Anova):
         self.level = level
         self.level_ = self.levels.difference(set([self.level])).pop()
 
+    def S(self):
+        f = lambda x: len(x) * (x['score'].mean() - self.grand_mean) ** 2
+        s = self.scores.df.groupby(self.level).apply(f).sum()
+        phi = len(self.scores.df[self.level].unique()) - 1
+        name = 'between({name})'.format(name=self.level)
+
+        yield Subject(s, phi, name)
+
     @property
     def phiE(self):
         m = self.scores.df[self.level].value_counts().size
@@ -87,9 +96,53 @@ class OneWay(Anova):
 
         return n - m
 
-    def S(self):
-        f = lambda x: len(x) * (x['score'].mean() - self.grand_mean) ** 2
-        s = self.scores.df.groupby('system').apply(f).sum()
-        phi = len(self.scores.df[self.level].unique()) - 1
+class TwoWay(Anova):
+    def __init__(self, scores, alpha):
+        super().__init__(scores, alpha)
+        self.shape = self.scores.shape()
+        if not self.shape.replication:
+            raise ValueError('Irregular replications')
 
-        yield Subject(s, phi, 'between({})'.format(self.level))
+        self.replication = self.shape.replication > 1
+
+    @property
+    def phiE(self):
+        phi = (self.shape.system - 1) * (self.shape.topic - 1)
+        if self.replication:
+            phi *= self.shape.replication - 1
+
+        return phi
+
+    @ft.lru_cache(maxsize=128)
+    def inner(self, keys):
+        xij = 0
+
+        for (k, v) in zip(self.levels, keys):
+            view = self.scores.df[self.scores.df[k] == v]
+            xij += view['score'].mean()
+
+        return xij
+
+    def outer(self, x):
+        return len(x) * (x['score'].mean() - self.grand_mean) ** 2
+
+    def S(self):
+        for i in powerset(self.levels, False):
+            if len(self.levels) == len(i):
+                if not self.replication:
+                    continue
+                s = 0
+                for (keys, g) in self.scores.df.groupby(list(self.levels)):
+                    score = g['score'].mean()
+                    s += (score - self.inner(keys) + self.grand_mean) ** 2
+            else:
+                s = self.scores.df.groupby(list(i)).apply(self.outer).sum()
+            s *= self.shape.replication
+
+            phi = 1
+            for j in i:
+                phi *= len(self.scores.df[j].unique()) - 1
+
+            name = 'between({name})'.format(name='x'.join(i))
+
+            yield Subject(s, phi, name)
