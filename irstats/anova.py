@@ -1,5 +1,4 @@
 import math
-import logging
 import operator as op
 import itertools as it
 import collections as cl
@@ -49,17 +48,17 @@ class Anova:
 
         self.grand_mean = self.scores.df['score'].mean()
 
-    def __iter__(self):
         scores = self.scores.df['score']
         ST = np.sum(np.square(np.subtract(scores, self.grand_mean)))
         phi = len(self.scores.df) - 1
+        self.total = Subject(ST, phi, 'total')
 
-        yield Subject(ST, phi, 'total').effect()
-
+    def __iter__(self):
         between = list(self.S())
-
-        SE = ST - sum(map(op.attrgetter('S'), between))
+        SE = self.total.S - sum([ x.S for x in between ])
         E = Subject(SE, self.phiE, 'within')
+
+        yield self.total.effect()
 
         for i in between:
             F = float(i) / float(E)
