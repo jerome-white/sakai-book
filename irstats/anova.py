@@ -14,9 +14,9 @@ Effect = cl.namedtuple('Effect',
                        ('factor', 'df', 'ssq', 'msq') + Test._fields,
                        defaults=(None, ) * len(Test._fields))
 
-def powerset(collection: list, empty=True):
+def powerset(collection, empty=True, full=True):
     c = list(collection)
-    for i in range(int(not empty), len(c) + 1):
+    for i in range(int(not empty), len(c) + int(full)):
         yield from it.combinations(c, r=i)
 
 class Subject:
@@ -127,10 +127,8 @@ class TwoWay(Anova):
         return len(x) * (x['score'].mean() - self.grand_mean) ** 2
 
     def S(self):
-        for i in powerset(self.levels, False):
+        for i in powerset(self.levels, False, self.replication):
             if len(self.levels) == len(i):
-                if not self.replication:
-                    continue
                 s = 0
                 for (keys, g) in self.scores.df.groupby(list(self.levels)):
                     score = g['score'].mean()
