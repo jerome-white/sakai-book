@@ -71,6 +71,9 @@ class Anova:
 
         yield E.effect()
 
+    def desq(self, x):
+        return len(x) * (x['score'].mean() - self.grand_mean) ** 2
+
 class OneWay(Anova):
     def __init__(self, scores, alpha, level='system'):
         if level not in self.levels:
@@ -82,8 +85,7 @@ class OneWay(Anova):
         self.level_ = self.levels.difference(set([self.level])).pop()
 
     def S(self):
-        f = lambda x: len(x) * (x['score'].mean() - self.grand_mean) ** 2
-        s = self.scores.df.groupby(self.level).apply(f).sum()
+        s = self.scores.df.groupby(self.level).apply(self.desq).sum()
         phi = len(self.scores.df[self.level].unique()) - 1
         name = 'between({name})'.format(name=self.level)
 
@@ -123,9 +125,6 @@ class TwoWay(Anova):
 
         return xij
 
-    def outer(self, x):
-        return len(x) * (x['score'].mean() - self.grand_mean) ** 2
-
     def S(self):
         for i in powerset(self.levels, False, self.replication):
             if len(self.levels) == len(i):
@@ -134,7 +133,7 @@ class TwoWay(Anova):
                     score = g['score'].mean()
                     s += (score - self.inner(keys) + self.grand_mean) ** 2
             else:
-                s = self.scores.df.groupby(list(i)).apply(self.outer).sum()
+                s = self.scores.df.groupby(list(i)).apply(self.desq).sum()
             s *= self.shape.replication
 
             phi = 1
