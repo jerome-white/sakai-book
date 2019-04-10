@@ -56,21 +56,21 @@ class Replications:
 class Anova:
     levels = set([ 'system', 'topic' ])
 
-    def __init__(self, scores, alpha, e1='system'):
-        if e1 not in self.levels:
-            raise ValueError('Unrecognized level {}'.format(e1))
+    def __init__(self, scores, alpha, l1='system'):
+        if l1 not in self.levels:
+            raise ValueError('Unrecognized level {}'.format(l1))
 
         self.scores = scores
         self.alpha = alpha
 
-        self.e1 = e1
-        self.e2 = self.levels.difference(set([self.e1])).pop()
+        self.l1 = l1
+        self.l2 = self.levels.difference(set([self.l1])).pop()
 
         self.subjects = []
         self.grand_mean = self.scores.df['score'].mean()
 
         shape = self.scores.shape()
-        (self.m, self.n) = [ getattr(shape, x) for x in (self.e1, self.e2) ]
+        (self.m, self.n) = [ getattr(shape, x) for x in (self.l1, self.l2) ]
 
         # total
         scores = self.scores.df['score']
@@ -108,7 +108,7 @@ class Anova:
         VE = float(self.E)
         MOE = irs.t_inv(self.phiE, self.alpha) * math.sqrt(VE / self.n)
 
-        for (i, g) in self.scores.df.groupby(self.e1):
+        for (i, g) in self.scores.df.groupby(self.l1):
             yield (i, ConfidenceInterval(g['score'].mean(), MOE))
 
     def S(self):
@@ -120,15 +120,15 @@ class Anova:
 
 class OneWay(Anova):
     def S(self):
-        s = self.scores.df.groupby(self.e1).apply(self.desq).sum()
-        phi = len(self.scores.df[self.e1].unique()) - 1
-        name = 'between({name})'.format(name=self.e1)
+        s = self.scores.df.groupby(self.l1).apply(self.desq).sum()
+        phi = len(self.scores.df[self.l1].unique()) - 1
+        name = 'between({name})'.format(name=self.l1)
 
         yield Subject(s, phi, name)
 
     @property
     def phiE(self):
-        n = self.scores.df[self.e2].value_counts().sum()
+        n = self.scores.df[self.l2].value_counts().sum()
         return n - self.m
 
 class TwoWay(Anova):
