@@ -1,4 +1,5 @@
 import math
+# import logging
 import operator as op
 import itertools as it
 import functools as ft
@@ -8,6 +9,7 @@ import numpy as np
 import scipy.stats as st
 
 import irstats as irs
+from .ci import ConfidenceInterval
 
 Test = cl.namedtuple('Test', 'F, p, reject')
 Effect = cl.namedtuple('Effect',
@@ -40,78 +42,106 @@ class Subject:
 
         return e
 
+class Replications:
+    def __init__(self, scores):
+        self.shape = scores.shape()
+        if not self.shape.replication:
+            raise ValueError('Irregular replications')
+
+    def __call__(self):
+        return self.shape.replication
+
+    def __bool__(self):
+        return self() > 1
+
 class Anova:
     levels = set([ 'system', 'topic' ])
 
-    def __init__(self, scores, alpha):
+    def __init__(self, scores, alpha, e1='system'):
+        if e1 not in self.levels:
+            raise ValueError('Unrecognized level {}'.format(level))
+
         self.scores = scores
         self.alpha = alpha
 
+        self.e1 = e1
+        self.e2 = self.levels.difference(set([self.e1])).pop()
+
+        self.subjects = []
         self.grand_mean = self.scores.df['score'].mean()
 
+        shape = self.scores.shape()
+        (self.m, self.n) = [ getattr(shape, x) for x in (self.e1, self.e2) ]
+
+        # total
         scores = self.scores.df['score']
         ST = np.sum(np.square(np.subtract(scores, self.grand_mean)))
         phi = len(self.scores.df) - 1
-        self.total = Subject(ST, phi, 'total')
+        self.subjects.append(Subject(ST, phi, 'total'))
+
+        # between
+        self.subjects.extend(self.S())
+
+        # within
+        between = it.islice(self.subjects, 1, len(self.subjects))
+        SE = self.subjects[0].S - sum([ x.S for x in between ])
+        self.subjects.append(Subject(SE, self.phiE, 'within'))
 
     def __iter__(self):
-        between = list(self.S())
-        SE = self.total.S - sum([ x.S for x in between ])
-        E = Subject(SE, self.phiE, 'within')
+        VE = float(self.E)
+        last = len(self.subjects) - 1
 
-        yield self.total.effect()
+        for (i, s) in enumerate(self.subjects):
+            if 0 < i < last:
+                F = float(s) / VE
+                reject = int(F >= irs.F_inv(s.phi, self.E.phi, self.alpha))
+                p = st.f.sf(F, s.phi, self.E.phi)
+                t = Test(F, p, reject)
+            else:
+                t = None
 
-        for i in between:
-            F = float(i) / float(E)
-            reject = int(F >= irs.F_inv(i.phi, E.phi, self.alpha))
-            p = st.f.sf(F, i.phi, E.phi)
-            t = Test(F, p, reject)
-
-            yield i.effect(t)
-
-        yield E.effect()
+            yield s.effect(t)
 
     def desq(self, x):
         return len(x) * (x['score'].mean() - self.grand_mean) ** 2
 
-class OneWay(Anova):
-    def __init__(self, scores, alpha, level='system'):
-        if level not in self.levels:
-            raise ValueError('Unrecognized level {}'.format(level))
+    def ci(self):
+        VE = float(self.E)
+        MOE = irs.t_inv(self.phiE, self.alpha) * math.sqrt(VE / self.n)
 
-        super().__init__(scores, alpha)
-
-        self.level = level
-        self.level_ = self.levels.difference(set([self.level])).pop()
+        for (i, g) in self.scores.df.groupby(self.e1):
+            yield (i, ConfidenceInterval(g['score'].mean(), MOE))
 
     def S(self):
-        s = self.scores.df.groupby(self.level).apply(self.desq).sum()
-        phi = len(self.scores.df[self.level].unique()) - 1
-        name = 'between({name})'.format(name=self.level)
+        raise NotImplementedError()
+
+    @property
+    def E(self):
+        return self.subjects[-1]
+
+class OneWay(Anova):
+    def S(self):
+        s = self.scores.df.groupby(self.e1).apply(self.desq).sum()
+        phi = len(self.scores.df[self.e1].unique()) - 1
+        name = 'between({name})'.format(name=self.e1)
 
         yield Subject(s, phi, name)
 
     @property
     def phiE(self):
-        m = self.scores.df[self.level].value_counts().size
-        n = self.scores.df[self.level_].value_counts().sum()
-
-        return n - m
+        n = self.scores.df[self.e2].value_counts().sum()
+        return n - self.m
 
 class TwoWay(Anova):
     def __init__(self, scores, alpha):
+        self.replication = Replications(scores)
         super().__init__(scores, alpha)
-        self.shape = self.scores.shape()
-        if not self.shape.replication:
-            raise ValueError('Irregular replications')
-
-        self.replication = self.shape.replication > 1
 
     @property
     def phiE(self):
-        phi = (self.shape.system - 1) * (self.shape.topic - 1)
+        phi = (self.m - 1) * (self.n - 1)
         if self.replication:
-            phi *= self.shape.replication - 1
+            phi *= self.replication() - 1
 
         return phi
 
@@ -126,7 +156,7 @@ class TwoWay(Anova):
         return xij
 
     def S(self):
-        for i in powerset(self.levels, False, self.replication):
+        for i in powerset(self.levels, False, bool(self.replication)):
             if len(self.levels) == len(i):
                 s = 0
                 for (keys, g) in self.scores.df.groupby(list(self.levels)):
@@ -134,7 +164,7 @@ class TwoWay(Anova):
                     s += (score - self.inner(keys) + self.grand_mean) ** 2
             else:
                 s = self.scores.df.groupby(list(i)).apply(self.desq).sum()
-            s *= self.shape.replication
+            s *= self.replication()
 
             phi = 1
             for j in i:
