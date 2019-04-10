@@ -1,6 +1,5 @@
 import math
 # import logging
-import operator as op
 import itertools as it
 import functools as ft
 import collections as cl
@@ -59,7 +58,7 @@ class Anova:
 
     def __init__(self, scores, alpha, e1='system'):
         if e1 not in self.levels:
-            raise ValueError('Unrecognized level {}'.format(level))
+            raise ValueError('Unrecognized level {}'.format(e1))
 
         self.scores = scores
         self.alpha = alpha
