@@ -8,25 +8,68 @@ from argparse import ArgumentParser
 
 import numpy as np
 
-from irstats import Systems
+import irstats as irs
 
-class RandomisedSystems(Systems):
-    def shuffle(self):
-        return np.apply_along_axis(np.random.permutation, 1, self.data)
+Result = cl.namedtuple('Result', 'system1, system2, difference, p')
 
-def func(incoming, outgoing, systems):
-    d = dict(systems.differences())
+class Shuffler:
+    def __init__(self, scores, agg=True):
+        self.scores = scores.astable().values
+        self.agg = agg
 
-    while True:
-        _ = incoming.get()
+    def __iter__(self):
+        return self
 
-        x = systems.shuffle().mean(axis=0)
-        d_ = x.max() - x.min()
-        for j in systems.pairs():
-            if d_ >= abs(d[j]):
-                outgoing.put(j)
+    def __next__(self):
+        scores = np.apply_along_axis(np.random.permutation, 1, self.scores)
+        if self.agg:
+            scores = scores.mean(axis=0)
 
-        outgoing.put(None)
+        return scores
+
+class RandomisedTukey:
+    def __init__(self, scores, B, workers=None):
+        self.scores = scores
+        self.B = B
+        self.workers = mp.cpu_count() if not workers else workers
+
+        self.shuffle = Shuffler(self.scores)
+
+        self.d = {}
+        for i in self.scores.combinations():
+            k = tuple(i.keys())
+            v = np.subtract(*map(np.mean, i.values()))
+            self.d[k] = v
+
+        self.c = cl.Counter(dict(map(lambda x: (x, 0), self.d.keys())))
+
+    def __iter__(self):
+        with mp.Pool(self.workers) as pool:
+            for i in pool.imap_unordered(self.do, range(self.B)):
+                self.c.update(i)
+
+        return self
+
+    def __next__(self):
+        if not self.c:
+            raise StopIteration()
+
+        (k, v) = self.c.popitem()
+
+        return Result(*k, self.d[k], v / self.B)
+
+    def do(self, b):
+        c = cl.Counter()
+
+        x = next(self.shuffle)
+        d = x.max() - x.min()
+
+        for i in self.scores.combinations():
+            systems = tuple(i.keys())
+            if d >= abs(self.d[systems]):
+                c[systems] += 1
+
+        return c
 
 arguments = ArgumentParser()
 arguments.add_argument('--B', type=int, default=0)
@@ -35,31 +78,11 @@ args = arguments.parse_args()
 
 assert(args.B > 0)
 
-incoming = mp.JoinableQueue()
-outgoing = mp.Queue()
-systems = RandomisedSystems(sys.stdin)
+scores = irs.Scores.from_csv(sys.stdin)
+writer = None
 
-with mp.Pool(args.workers, func, (outgoing, incoming, systems)):
-    for i in range(args.B):
-        outgoing.put(None)
-
-    jobs = args.B
-    count = cl.Counter()
-    while jobs:
-        pair = incoming.get()
-        if pair is None:
-            jobs -= 1
-        else:
-            count[pair] += 1
-
-fieldnames = [
-    'system_1',
-    'system_2',
-    'difference',
-    'p-value',
-]
-writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
-writer.writeheader()
-for (i, j) in systems.differences():
-    row = (*i, j, count[i] / args.B)
-    writer.writerow(dict(zip(fieldnames, row)))
+for i in RandomisedTukey(scores, args.B, args.workers):
+    if writer is None:
+        writer = csv.DictWriter(sys.stdout, fieldnames=i._fields)
+        writer.writeheader()
+    writer.writerow(i._asdict())
