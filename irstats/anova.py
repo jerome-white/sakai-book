@@ -30,7 +30,7 @@ class Subject:
         return str(self.factors)
 
     def __float__(self):
-        return self.S / self.phi
+        return float(self.S / self.phi)
 
     def effect(self, test=None):
         e = Effect(str(self), self.phi, self.S, float(self))
