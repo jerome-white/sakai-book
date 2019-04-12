@@ -2,14 +2,13 @@ import operator as op
 import collections as cl
 
 class ConfidenceInterval:
+    fields = ('left', 'right')
+
     def __init__(self, mean, MOE):
         self.mean = mean
         self.MOE = MOE
 
-        self.f = {
-            'left': op.sub,
-            'right': op.add,
-        }
+        self.f = dict(zip(ConfidenceInterval.fields, (op.sub, op.add)))
         self.itr = None
 
     def __iter__(self):
