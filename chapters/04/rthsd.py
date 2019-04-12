@@ -1,5 +1,6 @@
 import sys
 import csv
+import operator as op
 import itertools as it
 import collections as cl
 import multiprocessing as mp
@@ -11,6 +12,13 @@ import numpy as np
 import irstats as irs
 
 Result = cl.namedtuple('Result', 'system1, system2, difference, p')
+
+def partitions(n, m):
+    (x, y) = [ f(m, n) for f in (op.floordiv, op.mod) ]
+    assert(n > y)
+    pairs = it.zip_longest(it.repeat(x, n), it.repeat(1, y), fillvalue=0)
+
+    yield from it.starmap(op.add, pairs)
 
 class Shuffler:
     def __init__(self, scores, agg=True):
@@ -45,7 +53,8 @@ class RandomisedTukey:
 
     def __iter__(self):
         with mp.Pool(self.workers) as pool:
-            for i in pool.imap_unordered(self.do, range(self.B)):
+            iterable = partitions(self.workers, self.B)
+            for i in pool.imap_unordered(self.do, iterable):
                 self.c.update(i)
 
         return self
@@ -61,13 +70,14 @@ class RandomisedTukey:
     def do(self, b):
         c = cl.Counter()
 
-        x = next(self.shuffle)
-        d = x.max() - x.min()
+        for _ in range(b):
+            x = next(self.shuffle)
+            d = x.max() - x.min()
 
-        for i in self.scores.combinations():
-            systems = tuple(i.keys())
-            if d >= abs(self.d[systems]):
-                c[systems] += 1
+            for i in self.scores.combinations():
+                systems = tuple(i.keys())
+                if d >= abs(self.d[systems]):
+                    c[systems] += 1
 
         return c
 
