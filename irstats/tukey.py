@@ -96,8 +96,7 @@ class RandomisedTukey:
     def do(self, b):
         c = cl.Counter()
 
-        for _ in range(b):
-            x = next(self.shuffle)
+        for (_, x) in zip(range(b), self.shuffle):
             d = x.max() - x.min()
 
             for i in self.scores.combinations():
