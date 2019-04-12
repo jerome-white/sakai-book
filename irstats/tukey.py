@@ -11,7 +11,10 @@ from irstats import inverse as irs
 from .ci import ConfidenceInterval
 
 Result = cl.namedtuple('Result', 'system1, system2, difference, p')
-CompleteResult = cl.namedtuple('CompleteResult', Result._fields + ('reject', ))
+CompleteResult = cl.namedtuple('CompleteResult',
+                               Result._fields + \
+                               ('reject', ) + \
+                               ConfidenceInterval.fields)
 
 def partitions(n, m):
     (x, y) = [ f(m, n) for f in (op.floordiv, op.mod) ]
@@ -54,11 +57,9 @@ class Tukey:
             reject = int(t >= q)
             p = st.t.sf(t, self.anova.m) * 2 # ???
 
-            result = CompleteResult(*i.keys(), diff, p, reject)
-
             ci = ConfidenceInterval(diff, q * normv)
 
-            yield { **result._asdict(), **ci.asdict() }
+            yield CompleteResult(*i.keys(), diff, p, reject, **ci.asdict())
 
 class RandomisedTukey:
     def __init__(self, scores, B, workers=None):

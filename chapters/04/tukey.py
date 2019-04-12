@@ -24,6 +24,6 @@ for i in (OneWay, TwoWay):
     writer = None
     for i in tukey:
         if writer is None:
-            writer = csv.DictWriter(sys.stdout, fieldnames=i.keys())
+            writer = csv.DictWriter(sys.stdout, fieldnames=i._fields)
             writer.writeheader()
-        writer.writerow(i)
+        writer.writerow(i._asdict())
