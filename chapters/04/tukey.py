@@ -50,11 +50,14 @@ args = arguments.parse_args()
 assert(0 <= args.alpha <= 1)
 
 scores = irs.Scores.from_csv(sys.stdin)
-tukey = Tukey(scores, args.alpha)
 
-writer = None
-for i in tukey:
-    if writer is None:
-        writer = csv.DictWriter(sys.stdout, fieldnames=i._fields)
-        writer.writeheader()
-    writer.writerow(i._asdict())
+for i in (irs.OneWay, irs.TwoWay):
+    logging.debug(i)
+    tukey = Tukey(scores, args.alpha, i)
+
+    writer = None
+    for i in tukey:
+        if writer is None:
+            writer = csv.DictWriter(sys.stdout, fieldnames=i.keys())
+            writer.writeheader()
+        writer.writerow(i)
