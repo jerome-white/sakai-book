@@ -49,7 +49,8 @@ class Glass(Effect):
 
         # Equation 5.12
         if unbiased:
-            self.correction = lambda x: (1 - 3 / (4 * len(x2) - 5)) * x
+            n2 = len(x2)
+            self.correction = lambda x: (1 - 3 / (4 * n2 - 5)) * x
 
     # Equation 5.11
     def V(self):
