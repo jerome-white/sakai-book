@@ -27,6 +27,9 @@ class T:
         for i in self.scores.combinations():
             yield dict(zip(self.fieldnames, self.test(i)))
 
+    def test(self, i):
+        raise NotImplementedError()
+
 class Paired(T):
     def __init__(self, scores, alpha):
         assert(scores.ispaired())
