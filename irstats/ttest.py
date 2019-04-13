@@ -8,6 +8,54 @@ import scipy.stats as st
 
 import irstats as irs
 
+class Effect:
+    def __init__(self, x1, x2):
+        self.x = (x1, x2)
+        self.difference = it.starmap(op.sub, map(np.mean, self.x))
+        (self.s, self.n) = map(sum, [ map(x, self.x) for x in (self.S, len) ])
+
+    def __float__(self):
+        return self.correction(self.difference / math.sqrt(self.V()))
+
+    def correction(self, value):
+        return value
+
+    def S(self, values):
+        return np.sum(np.square(np.subtract(values, np.mean(values))))
+
+    def V(self):
+        raise NotImplementedError()
+
+class Hedge(Effect):
+    def __init__(self, x1, x2, unbiased=False):
+        super().__init__(x1, x2)
+
+        # Equation 5.10
+        if unbiased:
+            self.correction = lambda x: (1 - 3 / (4 * self.n - 9)) * x
+
+    # Equation 5.6
+    def V(self):
+        return self.s / (self.n - 2)
+
+class Cohen(Effect):
+    # Equation 5.8
+    def V(self):
+        return self.s / self.n
+
+class Glass:
+    def __init__(self, x1, x2, unbiased=False):
+        super().__init__(x1, x2)
+
+        # Equation 5.12
+        if unbiased:
+            self.correction = lambda x: (1 - 3 / (4 * len(x2) - 5)) * x
+
+    # Equation 5.11
+    def V(self):
+        (_, x2) = self.x
+        return self.S(x2) / (len(x2) - 1)
+
 class T:
     def __init__(self, scores, alpha):
         self.scores = scores
