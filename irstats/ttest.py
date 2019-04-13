@@ -11,7 +11,7 @@ import irstats as irs
 class Effect:
     def __init__(self, x1, x2):
         self.x = (x1, x2)
-        self.difference = it.starmap(op.sub, map(np.mean, self.x))
+        self.difference = np.subtract(*map(np.mean, self.x))
         (self.s, self.n) = map(sum, [ map(x, self.x) for x in (self.S, len) ])
 
     def __float__(self):
