@@ -43,7 +43,7 @@ class Cohen(Effect):
     def V(self):
         return self.s / self.n
 
-class Glass:
+class Glass(Effect):
     def __init__(self, x1, x2, unbiased=False):
         super().__init__(x1, x2)
 
