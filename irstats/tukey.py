@@ -13,7 +13,7 @@ from .ci import ConfidenceInterval
 Result = cl.namedtuple('Result', 'system1, system2, difference, p')
 CompleteResult = cl.namedtuple('CompleteResult',
                                Result._fields + \
-                               ('reject', ) + \
+                               ('reject', 'effect') + \
                                ConfidenceInterval.fields)
 
 def partitions(n, m):
@@ -57,9 +57,16 @@ class Tukey:
             reject = int(t >= q)
             p = st.t.sf(t, self.anova.m) * 2 # ???
 
+            effect = diff / math.sqrt(self.anova.phiE)
+
             ci = ConfidenceInterval(diff, q * normv)
 
-            yield CompleteResult(*i.keys(), diff, p, reject, **ci.asdict())
+            yield CompleteResult(*i.keys(),
+                                 diff,
+                                 p,
+                                 reject,
+                                 effect,
+                                 **ci.asdict())
 
 class RandomisedTukey:
     def __init__(self, scores, B, workers=None):
