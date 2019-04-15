@@ -44,18 +44,21 @@ class Cohen(Effect):
         return self.s / self.n
 
 class Glass(Effect):
-    def __init__(self, x1, x2, unbiased=False):
+    def __init__(self, x1, x2, baseline=None):
         super().__init__(x1, x2)
 
-        # Equation 5.12
-        if unbiased:
-            n2 = len(x2)
+        if self.baseline is None:
+            self.baseline = x2
+        else:
+            self.baseline = baseline
+
+            # Equation 5.12
+            n2 = len(self.baseline)
             self.correction = lambda x: (1 - 3 / (4 * n2 - 5)) * x
 
     # Equation 5.11
     def V(self):
-        (_, x2) = self.x
-        return self.S(x2) / (len(x2) - 1)
+        return self.S(self.baseline) / (len(self.baseline) - 1)
 
 class T:
     def __init__(self, scores, alpha):
