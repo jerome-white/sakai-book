@@ -65,15 +65,14 @@ class Tukey:
             reject = int(t >= q)
             p = st.t.sf(t, self.anova.m) * 2 # ???
 
-            effect = diff / math.sqrt(self.anova.phiE)
-
+            effect = TukeyEffect(x1, x2, self.anova)
             ci = ConfidenceInterval(diff, q * normv)
 
             yield CompleteResult(*i.keys(),
                                  diff,
                                  p,
-                                 reject,
                                  effect,
+                                 reject,
                                  **ci.asdict())
 
 class RandomisedTukey:
