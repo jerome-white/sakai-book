@@ -17,6 +17,12 @@ class Scores:
     def __call__(self):
         return self.df
 
+    def __getitem__(self, key):
+        index = 'topic'
+        view = self.df[self.df['system'] == key][[index, 'scores']]
+
+        return view.set_index(index).squeeze()
+
     #
     #
     #
