@@ -76,26 +76,44 @@ class Tukey:
                                  **ci.asdict())
 
 class RandomisedTukey:
-    def __init__(self, scores, B, workers=None):
+    class Info:
+        def __init__(self, difference, effect):
+            self.difference = difference
+            self.effect = effect
+            self.count = 0
+
+        def inc(self, counter):
+            self.count += counter
+
+    def __init__(self, scores, B, workers=None, baseline=None):
         self.scores = scores
         self.B = B
-        self.workers = mp.cpu_count() if not workers else workers
+        self.workers = workers if workers else mp.cpu_count()
 
         self.shuffle = Shuffler(self.scores)
+        self.info = {}
 
-        self.d = {}
+        if baseline is not None:
+            baseline = self.scores[baseline].values
+
         for i in self.scores.combinations():
-            k = tuple(i.keys())
-            v = np.subtract(*map(np.mean, i.values()))
-            self.d[k] = v
+            key = tuple(i.keys())
 
-        self.c = cl.Counter(dict(map(lambda x: (x, 0), self.d.keys())))
+            difference = np.subtract(*map(np.mean, i.values()))
+
+            (x1, x2) = i.values()
+            if baseline is None:
+                baseline = x1
+            effect = Glass(x1, x2, baseline)
+
+            self.info[d] = Info(difference, effect)
 
     def __iter__(self):
         with mp.Pool(self.workers) as pool:
             iterable = partitions(self.workers, self.B)
             for i in pool.imap_unordered(self.do, iterable):
-                self.c.update(i)
+                for (k, v) in i.items():
+                    self.info[k].inc(v)
 
         return self
 
@@ -103,19 +121,20 @@ class RandomisedTukey:
         if not self.c:
             raise StopIteration()
 
-        (k, v) = self.c.popitem()
+        (k, info) = self.info.popitem()
+        p = info.count / self.B
+        e = float(info.effect)
 
-        return Result(*k, self.d[k], v / self.B)
+        return Result(*k, info.difference, p, e)
 
     def do(self, b):
         c = cl.Counter()
 
         for (_, x) in zip(range(b), self.shuffle):
             d = x.max() - x.min()
-
             for i in self.scores.combinations():
                 systems = tuple(i.keys())
-                if d >= abs(self.d[systems]):
+                if d >= abs(self.info[systems].difference):
                     c[systems] += 1
 
         return c
