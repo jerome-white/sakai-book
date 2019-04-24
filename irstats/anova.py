@@ -10,10 +10,10 @@ import scipy.stats as st
 import irstats as irs
 from .ci import ConfidenceInterval
 
-Test = cl.namedtuple('Test', 'F, p, reject')
-Effect = cl.namedtuple('Effect',
-                       ('factor', 'df', 'ssq', 'msq') + Test._fields,
-                       defaults=(None, ) * len(Test._fields))
+Test = cl.namedtuple('Test', 'F, p, reject, w, wp')
+Interaction = cl.namedtuple('Interaction',
+                            ('factor', 'df', 'ssq', 'msq') + Test._fields,
+                            defaults=(None, ) * len(Test._fields))
 
 def powerset(collection, empty=True, full=True):
     c = list(collection)
@@ -32,12 +32,12 @@ class Subject:
     def __float__(self):
         return float(self.S / self.phi)
 
-    def effect(self, test=None):
-        e = Effect(str(self), self.phi, self.S, float(self))
+    def interaction(self, test=None):
+        e = Interaction(str(self), self.phi, self.S, float(self))
         if test is not None:
             dtc = e._asdict()
             dtc.update(test._asdict())
-            e = Effect(**dtc)
+            e = Interaction(**dtc)
 
         return e
 
@@ -99,7 +99,7 @@ class Anova:
             else:
                 t = None
 
-            yield s.effect(t)
+            yield s.interaction(t)
 
     def desq(self, x):
         return len(x) * (x['score'].mean() - self.grand_mean) ** 2
