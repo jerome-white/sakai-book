@@ -71,16 +71,17 @@ class Tukey:
 
 class RandomisedTukey:
     class Info:
-        def __init__(self, difference, effect):
+        def __init__(self, difference, effect, count=0):
             self.difference = difference
             self.effect = effect
             self.count = 0
 
+        def __add__(self, value):
+            self.count += value
+            return self
+
         def __copy__(self):
             return type(self)(self.difference, self.effect)
-
-        def inc(self, counter):
-            self.count += counter
 
     def __init__(self, scores, B, workers=None, baseline=None):
         self.scores = scores
@@ -112,7 +113,7 @@ class RandomisedTukey:
             iterable = partitions(self.workers, self.B)
             for i in pool.imap_unordered(self.do, iterable):
                 for (k, v) in i.items():
-                    info[k].inc(v)
+                    info[k] += v
 
         for (k, v) in info.items():
             p = v.count / self.B
