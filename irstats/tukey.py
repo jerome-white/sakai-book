@@ -9,7 +9,7 @@ import scipy.stats as st
 
 from irstats import inverse as irs
 from .ci import ConfidenceInterval
-from .ttest import Effect, Glass
+from .effect import Glass
 
 Result = cl.namedtuple('Result', 'system1, system2, difference, p, effect')
 CompleteResult = cl.namedtuple('CompleteResult',
@@ -38,13 +38,6 @@ class Shuffler:
             scores = scores.mean(axis=0)
 
         return scores
-
-class TukeyEffect(Effect):
-    def __init__(self, x1, x2, anova):
-        super().__init__(x1, x2)
-
-    def V(self):
-        return self.anova.phiE
 
 class Tukey:
     def __init__(self, scores, alpha, Anova):
