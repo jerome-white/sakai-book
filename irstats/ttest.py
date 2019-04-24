@@ -47,7 +47,7 @@ class Glass(Effect):
     def __init__(self, x1, x2, baseline=None):
         super().__init__(x1, x2)
 
-        if self.baseline is None:
+        if baseline is None:
             self.baseline = x2
         else:
             self.baseline = baseline
