@@ -89,13 +89,19 @@ class Anova:
     def __iter__(self):
         VE = float(self.E)
         last = len(self.subjects) - 1
+        mnr = len(self.scores)
 
         for (i, s) in enumerate(self.subjects):
             if 0 < i < last:
                 F = float(s) / VE
                 reject = int(F >= irs.F_inv(s.phi, self.E.phi, self.alpha))
                 p = st.f.sf(F, s.phi, self.E.phi)
-                t = Test(F, p, reject)
+
+                x = s.S - s.phi * VE
+                w = x / (self.subjects[0].S + VE)
+                wp = x / (s.S * (mnr - s.phi) * VE)
+
+                t = Test(F, p, reject, w, wp)
             else:
                 t = None
 
