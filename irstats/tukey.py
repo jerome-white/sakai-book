@@ -106,7 +106,7 @@ class RandomisedTukey:
                 baseline = x1
             effect = Glass(x1, x2, baseline)
 
-            self.info[d] = Info(difference, effect)
+            self.info[key] = self.Info(difference, effect)
 
     def __iter__(self):
         with mp.Pool(self.workers) as pool:
