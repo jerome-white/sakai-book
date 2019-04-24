@@ -1,4 +1,5 @@
 import math
+import copy
 import operator as op
 import itertools as it
 import collections as cl
@@ -75,6 +76,9 @@ class RandomisedTukey:
             self.effect = effect
             self.count = 0
 
+        def __copy__(self):
+            return type(self)(self.difference, self.effect)
+
         def inc(self, counter):
             self.count += counter
 
@@ -102,23 +106,19 @@ class RandomisedTukey:
             self.info[key] = self.Info(difference, effect)
 
     def __iter__(self):
+        info = { x: copy.copy(y) for (x, y) in self.info.items() }
+
         with mp.Pool(self.workers) as pool:
             iterable = partitions(self.workers, self.B)
             for i in pool.imap_unordered(self.do, iterable):
                 for (k, v) in i.items():
-                    self.info[k].inc(v)
+                    info[k].inc(v)
 
-        return self
+        for (k, v) in info.items():
+            p = v.count / self.B
+            e = float(v.effect)
 
-    def __next__(self):
-        if not self.info:
-            raise StopIteration()
-
-        (k, info) = self.info.popitem()
-        p = info.count / self.B
-        e = float(info.effect)
-
-        return Result(*k, info.difference, p, e)
+            yield Result(*k, v.difference, p, e)
 
     def do(self, b):
         c = cl.Counter()
