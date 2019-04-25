@@ -40,18 +40,25 @@ arguments.add_argument('--beta', type=float,
                        help='Type II Error probability')
 arguments.add_argument('--min-diff', type=float,
                        help='Minimum detectable difference')
+arguments.add_argument('--min-delta', type=float,
+                       help='Minimum delta')
 arguments.add_argument('--sigma', type=float,
                        help='Variance estimate for score differences')
 arguments.add_argument('--radius', type=int, default=0)
 arguments.add_argument('--workers', type=int, default=mp.cpu_count())
 args = arguments.parse_args()
 
+if not op.xor(*map(bool, (args.min_delta, args.min_diff))):
+    err = 'Must specify --min-delta or --min-diff, but not both'
+    raise ValueError(err)
+
 with mp.Pool(args.workers) as pool:
+    if args.min_delta is None:
+        args.min_delta = args.min_diff / math.sqrt(args.sigma)
+
     norminv = lambda x: st.norm.ppf(x)
     (zalpha, zbeta) = map(norminv, (1 - args.alpha / 2, args.beta))
-
-    min_delta = args.min_diff / math.sqrt(args.sigma)
-    n = ((zalpha - zbeta) / min_delta) ** 2 + zalpha ** 2 / 2
+    n = ((zalpha - zbeta) / args.min_delta) ** 2 + zalpha ** 2 / 2
 
     logging.debug(n)
 
@@ -59,6 +66,6 @@ with mp.Pool(args.workers) as pool:
     start = max(2, recommended - args.radius)
     stop = recommended + args.radius + 1
 
-    f = lambda x: (x, args.alpha, args.beta, min_delta)
+    f = lambda x: (x, args.alpha, args.beta, args.min_delta)
     for s in pool.starmap(Sample, map(f, range(start, stop))):
         logging.info('{} {}'.format(int(s), bool(s)))
