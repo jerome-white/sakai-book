@@ -56,7 +56,7 @@ with mp.Pool(args.workers) as pool:
     logging.debug(n)
 
     recommended = math.ceil(n)
-    start = max(0, recommended - args.radius)
+    start = max(2, recommended - args.radius)
     stop = recommended + args.radius + 1
 
     f = lambda x: (x, args.alpha, args.beta, min_delta)
