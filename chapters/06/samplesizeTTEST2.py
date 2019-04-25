@@ -1,3 +1,5 @@
+import sys
+import csv
 import math
 import logging
 import operator as op
@@ -66,6 +68,11 @@ with mp.Pool(args.workers) as pool:
     start = max(2, recommended - args.radius)
     stop = recommended + args.radius + 1
 
+    fieldnames = ('n', 'adequate', 'achieved')
+    writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+    writer.writeheader()
+    
     f = lambda x: (x, args.alpha, args.beta, args.min_delta)
     for s in pool.starmap(Sample, map(f, range(start, stop))):
-        logging.info('{} {}'.format(int(s), bool(s)))
+        row = [ g(s) for g in (int, bool, float) ]
+        writer.writerow(dict(zip(fieldnames, row)))
