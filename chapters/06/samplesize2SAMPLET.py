@@ -3,9 +3,10 @@ import csv
 import math
 import logging
 import operator as op
-import scipy.stats as st
 import multiprocessing as mp
 from argparse import ArgumentParser
+
+import scipy.stats as st
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
