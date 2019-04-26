@@ -57,7 +57,6 @@ def func(incoming, outgoing, args):
             outgoing.put((params, s))
             if not s:
                 break
-        outgoing.put(None)
 
 arguments = ArgumentParser()
 arguments.add_argument('--difference', type=float,
@@ -84,17 +83,16 @@ with mp.Pool(args.workers, func, (outgoing, incoming, args)):
     jobs = len(df)
 
     while jobs:
-        result = incoming.get()
-        if result is None:
+        (params, sample) = incoming.get()
+
+        values = [ f(sample) for f in (int, bool, float) ]
+        row = { x: params[x] for x in ('alpha', 'beta') }
+        row.update(dict(zip(keys, values)))
+
+        if writer is None:
+            writer = csv.DictWriter(sys.stdout, fieldnames=row.keys())
+            writer.writeheader()
+        writer.writerow(row)
+
+        if not sample:
             jobs -= 1
-        else:
-            (params, sample) = result
-
-            values = [ f(sample) for f in (int, bool, float) ]
-            row = { x: params[x] for x in ('alpha', 'beta') }
-            row.update(dict(zip(keys, values)))
-
-            if writer is None:
-                writer = csv.DictWriter(sys.stdout, fieldnames=row.keys())
-                writer.writeheader()
-            writer.writerow(row)
