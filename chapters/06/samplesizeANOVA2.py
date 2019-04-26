@@ -2,7 +2,6 @@ import sys
 import csv
 import math
 import logging
-import itertools as it
 import scipy.stats as st
 import multiprocessing as mp
 from pathlib import Path
@@ -53,10 +52,11 @@ def func(incoming, outgoing, args):
 
         logging.debug('n: {} {}'.format(n, params))
 
-        s = True
-        for i in it.takewhile(lambda _: s, range(math.floor(n), 2, -1)):
+        for i in range(math.floor(n), 2, -1):
             s = Sample(i, params['alpha'], params['beta'], delta, args.systems)
             outgoing.put((params, s))
+            if not s:
+                break
         outgoing.put(None)
 
 arguments = ArgumentParser()
