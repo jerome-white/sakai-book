@@ -54,7 +54,7 @@ def func(incoming, outgoing, args):
         logging.debug('n: {} {}'.format(n, params))
 
         s = True
-        for i in it.takewhile(lambda _: s, range(math.floor(n), 0, -1)):
+        for i in it.takewhile(lambda _: s, range(math.floor(n), 2, -1)):
             s = Sample(i, params['alpha'], params['beta'], delta, args.systems)
             outgoing.put((params, s))
         outgoing.put(None)
