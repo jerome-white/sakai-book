@@ -13,12 +13,6 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S')
 
-# def valid(args):
-#     focus = ('effect_size', 'difference', 'sigma')
-#     (a, *b) = [ bool(getattr(args, x)) for x in focus ]
-
-#     return a ^ op.or_(*b)
-
 class Sample:
     def __init__(self, n, alpha, delta, sigma):
         self.n = n
@@ -61,11 +55,6 @@ arguments.add_argument('--sigma', type=float,
 arguments.add_argument('--use-gamma', action='store_true')
 arguments.add_argument('--workers', type=int, default=mp.cpu_count())
 args = arguments.parse_args()
-
-# if not valid(args):
-#     raise ValueError('Must specify either an effect '
-#                      'size, or a difference and sigma, '
-#                      'but not both.')
 
 with mp.Pool(args.workers) as pool:
     zalpha = st.norm.ppf(1 - args.alpha / 2)
