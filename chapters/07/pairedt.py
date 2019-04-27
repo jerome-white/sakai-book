@@ -14,7 +14,7 @@ arguments.add_argument('--tail', type=int, default=2,
                        help='Sides of the test')
 arguments.add_argument('--alpha', type=float, default=0.05,
                        help='Type I Error probability')
-arguments.add_argument('--power', type=float,
+arguments.add_argument('--power', type=float, default=0.80,
                        help='Desired statistical power')
 args = arguments.parse_args()
 
