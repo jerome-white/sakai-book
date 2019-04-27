@@ -8,7 +8,7 @@ from statsmodels.stats.power import TTestPower
 arguments = ArgumentParser()
 arguments.add_argument('--tstat', type=float,
                        help='t-statistic (t0) reported')
-arguments.add_argument('--n', type=float,
+arguments.add_argument('--n', type=int,
                        help='Actual sample size')
 arguments.add_argument('--tail', type=int, default=2,
                        help='Sides of the test')
