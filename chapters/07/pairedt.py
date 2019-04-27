@@ -23,7 +23,7 @@ if args.tail == 1:
 elif args.tail == 2:
     alternative = 'two'
 else:
-    raise ValueError('Invalid tail: {}. Should be between 1 and 2'
+    raise ValueError('Invalid tail: {}. Should be either 1 or 2'
                      .format(args.tail))
 
 es = abs(args.tstat) / math.sqrt(args.n)
