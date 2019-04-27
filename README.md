@@ -53,6 +53,15 @@ From there the a `Scores` object should be created. Provide a list of
 to the `Scores` constructor to instantiate an instance. Specific tests
 can be run by passing an instance of that object.
 
+# Dependencies
+
+Python (3.7+), along with
+
+* Numpy
+* Scipy
+* Pandas
+* Statsmodels
+
 # References
 
 * [Discpower](http://research.nii.ac.jp/ntcir/tools/discpower-en.html)
