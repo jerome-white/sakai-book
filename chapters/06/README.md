@@ -1,7 +1,7 @@
 # Chapter 6: "Topic Set Size Design Using Excel"
 
-These files are reproductions of the Excel sheets mentioned in the
-book:
+These Python scripts are reproductions of the Excel sheets mentioned
+and linked-to in the book:
 
 * [TTEST2](http://www.f.waseda.jp/tetsuya/samplesizeTTEST2.xlsx)
 * [2SAMPLET](http://www.f.waseda.jp/tetsuya/samplesize2SAMPLET.xlsx)
