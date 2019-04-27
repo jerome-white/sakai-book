@@ -8,8 +8,8 @@ Power](http://sakailab.com/leirbook/)
 
 # HOWTO
 
-All scripts within the *chapters* directory can be run standalone,
-from the command. First, set the PYTHONPATH appropriately:
+All scripts within the *chapters* directory can be run standalone from
+the command line. First, set the PYTHONPATH appropriately:
 
 ```bash
 $> git clone https://github.com/jerome-white/sakai-book.git
