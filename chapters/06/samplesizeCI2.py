@@ -25,14 +25,14 @@ class Sample:
         return self.n
 
     def __bool__(self):
-        return bool(self.right <= self.left)
+        return bool(self.left <= self.right)
 
 class Approximation(Sample):
     def __init__(self, n, alpha, delta, sigma):
         super().__init__(n, alpha, delta, sigma)
 
-        self.left = delta / (2 * math.sqrt(sigma))
-        self.right = self.t * (1 - 1 / (4 * self.phi)) / math.sqrt(self.n)
+        self.left = self.t * (1 - 1 / (4 * self.phi)) / math.sqrt(self.n)
+        self.right = delta / (2 * math.sqrt(sigma))
 
 class WithGamma(Sample):
     def __init__(self, n, alpha, delta, sigma):
@@ -41,8 +41,8 @@ class WithGamma(Sample):
         g1 = math.gamma((self.phi + 1) / 2)
         g2 = math.gamma(self.phi / 2)
 
-        self.left = delta / (2 * math.sqrt(2) * math.sqrt(sigma))
-        self.right = self.t * g1 / (math.sqrt(self.n * self.phi) * g2)
+        self.left = self.t * g1 / (math.sqrt(self.n * self.phi) * g2)
+        self.right = delta / (2 * math.sqrt(2) * math.sqrt(sigma))
 
 arguments = ArgumentParser()
 arguments.add_argument('--alpha', type=float,
