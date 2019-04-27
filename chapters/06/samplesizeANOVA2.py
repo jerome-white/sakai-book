@@ -54,8 +54,9 @@ def func(incoming, outgoing, args):
 
         for i in range(math.floor(n), 2, -1):
             s = Sample(i, params['alpha'], params['beta'], delta, args.systems)
-            outgoing.put((params, s))
-            if not s:
+            enough = bool(s)
+            outgoing.put((params, s, enough))
+            if not enough:
                 break
 
 arguments = ArgumentParser()
@@ -78,14 +79,16 @@ with mp.Pool(args.workers, func, (outgoing, incoming, args)):
     for i in df.itertuples(index=False):
         outgoing.put(Parameters(i._asdict()))
 
-    keys = ('n', 'adequate', 'achieved')
+    keys = ('n', 'achieved', 'adequate')
     writer = None
     jobs = len(df)
 
     while jobs:
-        (params, sample) = incoming.get()
+        (params, sample, enough) = incoming.get()
 
-        values = [ f(sample) for f in (int, bool, float) ]
+        values = [ f(sample) for f in (int, float) ]
+        values.append(enough)
+
         row = { x: params[x] for x in ('alpha', 'beta') }
         row.update(dict(zip(keys, values)))
 
@@ -94,5 +97,5 @@ with mp.Pool(args.workers, func, (outgoing, incoming, args)):
             writer.writeheader()
         writer.writerow(row)
 
-        if not sample:
+        if not enough:
             jobs -= 1
