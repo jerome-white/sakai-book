@@ -2,6 +2,7 @@ import sys
 import csv
 import math
 import logging
+import operator as op
 import itertools as it
 import functools as ft
 from argparse import ArgumentParser
@@ -17,22 +18,25 @@ class Sample:
         self.n = n
         self.phi = 2 * self.n - 2
         self.t = st.t.ppf(1 - alpha / 2, self.phi)
+        self.ci = []
 
     def __iter__(self):
-        yield from (self.left, self.right)
+        yield from self.ci
 
     def __int__(self):
         return self.n
 
     def __bool__(self):
-        return bool(self.left <= self.right)
+        return bool(op.le(*self))
 
 class Approximation(Sample):
     def __init__(self, n, alpha, delta, sigma):
         super().__init__(n, alpha, delta, sigma)
 
-        self.left = self.t * (1 - 1 / (4 * self.phi)) / math.sqrt(self.n)
-        self.right = delta / (2 * math.sqrt(2) * math.sqrt(sigma))
+        self.ci.extend([
+            self.t * (1 - 1 / (4 * self.phi)) / math.sqrt(self.n),
+            delta / (2 * math.sqrt(2) * math.sqrt(sigma)),
+        ])
 
 class WithGamma(Sample):
     def __init__(self, n, alpha, delta, sigma):
@@ -41,8 +45,10 @@ class WithGamma(Sample):
         g1 = math.gamma((self.phi + 1) / 2)
         g2 = math.gamma(self.phi / 2)
 
-        self.left = self.t * g1 / (math.sqrt(self.n * self.phi) * g2)
-        self.right = delta / (4 * math.sqrt(sigma))
+        self.ci.extend([
+            self.t * g1 / (math.sqrt(self.n * self.phi) * g2),
+            delta / (4 * math.sqrt(sigma)),
+        ])
 
 arguments = ArgumentParser()
 arguments.add_argument('--alpha', type=float,
