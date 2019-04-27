@@ -27,7 +27,7 @@ class Sample:
     def __bool__(self):
         return bool(self.right <= self.left)
 
-class WithoutGamma(Sample):
+class Approximation(Sample):
     def __init__(self, n, alpha, delta, sigma):
         super().__init__(n, alpha, delta, sigma)
 
@@ -54,7 +54,7 @@ arguments.add_argument('--sigma', type=float,
 arguments.add_argument('--use-gamma', action='store_true')
 args = arguments.parse_args()
 
-S = WithGamma if args.use_gamma else WithoutGamma
+S = WithGamma if args.use_gamma else Approximation
 zalpha = st.norm.ppf(1 - args.alpha / 2)
 n = 4 * zalpha ** 2 * args.sigma / args.delta ** 2
 
