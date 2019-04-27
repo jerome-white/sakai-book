@@ -60,7 +60,7 @@ Python (3.7+), along with
 * Numpy
 * Scipy
 * Pandas
-* Statsmodels
+* StatsModels
 
 # References
 
