@@ -23,21 +23,17 @@ n = args.n - 1
 m = args.m - 1
 v = n * m
 
-# FHAT2 <- FSTAT/(N-1)
-es = args.fstat / n
+es = math.sqrt(args.fstat / (args.n - args.fstat))
 
 kwargs = {
     'effect_size': es,
     'alpha': args.alpha,
-    'df_num': m,
+    'df_denom': m,
 }
 
 fpow = FTestPower()
 
-#ACPOWER <- pwr.f2.test( u=M-1, v=(M-1)*(N-1), FHAT2, sig.level=ALPHA )$power
-power = fpow.solve_power(df_denom=v, **kwargs)
-
-# SAMPLESIZ <- ceiling( ( pwr.f2.test(u=M-1, power=POW, f2=FHAT2, sig.level=ALPHA )$v + N-1 + M-1 + 1)/M )
+power = fpow.solve_power(df_num=v, **kwargs)
 sample = (fpow.solve_power(power=args.power, **kwargs) + n + m + 1) / args.m
 sample = math.ceil(sample)
 
