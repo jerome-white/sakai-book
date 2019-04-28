@@ -21,4 +21,4 @@ statsmodels](https://www.statsmodels.org/stable/stats.html#power-and-sample-size
 
 Use the ANOVA scripts in this directory with caution: there are
 discrepancies between the values statsmodels F-test power calculations
-and those from R. See #1 for details.
+and those from R. See [#1](https://github.com/jerome-white/sakai-book/issues/1) for details.
