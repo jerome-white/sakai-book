@@ -47,20 +47,20 @@ should first import irstats:
 import irstats as irs
 ```
 
-From there the a `Scores` object should be created. Provide a list of
-`Score`
+From there a `Scores` object should be created. To do so, provide a
+list of `Score`
 [namedtuples](https://docs.python.org/3.7/library/collections.html#collections.namedtuple)
-to the `Scores` constructor to instantiate an instance. Specific tests
-can be run by passing an instance of that object.
+to the `Scores` constructor. Specific tests can be run by passing an
+instance of that object.
 
 # Dependencies
 
 Python (3.7+), along with
 
-* Numpy
-* Scipy
-* Pandas
-* StatsModels
+* numpy
+* scipy
+* pandas
+* statsmodels
 
 # References
 
