@@ -18,7 +18,6 @@ arguments.add_argument('--power', type=float, default=0.80,
                        help='Desired statistical power')
 args = arguments.parse_args()
 
-
 fhat = math.sqrt(args.fstat * (args.m - 1) / (args.m * (args.n - 1)))
 
 kwargs = {
