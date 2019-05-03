@@ -1,20 +1,57 @@
 import sys
 import csv
 import math
-import operator as op
-import collections as cl
+import functools as ft
 from argparse import ArgumentParser
 
 from statsmodels.stats.power import FTestAnovaPower
 
-Result = cl.namedtuple('Result', 'fhat, corrected, power, cell, total')
+class AnovaPowerTwo:
+    def __init__(self, fstat, m, n, total, alpha, phi):
+        self.m = m
+        self.phi = phi
+        self.ncells = m * n
 
-def pwr_anova_pre(f, df, cell, alpha, power):
-    df += 1
-    n = fpow.solve_power(effect_size=f, k_groups=df, alpha=alpha, power=power)
-    result = math.ceil((n - 1) * df / cell + 1)
+        phiE = total - self.ncells
+        eta2 = self.phi * fstat / (self.phi * fstat + phiE)
+        self.fhat = math.sqrt(eta2 / (1 - eta2))
+        self.num = phiE / (phi + 1) + 1
 
-    return result
+        self.pwr = ft.partial(FTestAnovaPower().solve_power,
+                              effect_size=self.fhat,
+                              alpha=alpha)
+
+    def __float__(self):
+        return float(self.pwr(k_groups=self.groups, nobs=self.num))
+
+    def pre(self, power):
+        df = self.phi + 1
+        n = self.pwr(k_groups=df, power=power)
+
+        percelsiz = math.ceil((n - 1) * df / self.ncells + 1)
+        totalsiz = self.ncells * percelsiz
+
+        return (percelsiz, totalsiz)
+
+    @property
+    def groups(self):
+        raise NotImplementedError()
+
+class Factor(AnovaPowerTwo):
+    def __init__(self, fstat, m, n, total, alpha):
+        super().__init__(fstat, m, n, total, alpha, m - 1)
+
+    @property
+    def groups(self):
+        return self.m
+
+class Interaction(AnovaPowerTwo):
+    def __init__(self, fstat, m, n, total, alpha):
+        super().__init__(fstat, m, n, total, alpha, (m - 1) * (n - 1))
+
+    @property
+    def groups(self):
+        return self.phi + 1
 
 arguments = ArgumentParser()
 arguments.add_argument('--fstat-A', type=float,
@@ -35,55 +72,31 @@ arguments.add_argument('--power', type=float, default=0.80,
                        help='Desired statistical power')
 args = arguments.parse_args()
 
-row = []
+params = [
+    (args.fstat_A, Factor, lambda x: x),
+    (args.fstat_B, Factor, lambda x: reversed(x)),
+    (args.fstat_AB, Interaction, lambda x: x),
+]
+dimensions = (args.m, args.n)
 
-fpow = FTestAnovaPower()
-ncells = args.m * args.n
-phiE = args.n_total - ncells
-
-phiA = args.m - 1
-eta2A = phiA * args.fstat_A / (phiA * args.fstat_A + phiE)
-fhatA = math.sqrt(eta2A / (1 - eta2A))
-numA = phiE / (phiA + 1) + 1
-power = fpow.solve_power(effect_size=fhatA,
-                         k_groups=args.m,
-                         nobs=numA,
-                         alpha=args.alpha)
-percelsiz_A = pwr_anova_pre(fhatA, phiA, ncells, args.alpha, args.power)
-totalsiz_A = ncells * percelsiz_A
-
-row.append(Result(fhatA, numA, power, percelsiz_A, totalsiz_A))
-
-phiB = args.n - 1
-eta2B = phiB * args.fstat_B / (phiB * args.fstat_B + phiE)
-fhatB = math.sqrt(eta2B / (1 - eta2B))
-numB = phiE / (phiB + 1) + 1
-power = fpow.solve_power(effect_size=fhatB,
-                         k_groups=args.n,
-                         nobs=numB,
-                         alpha=args.alpha)
-percelsiz_B = pwr_anova_pre(fhatB, phiB, ncells, args.alpha, args.power)
-totalsiz_B = ncells * percelsiz_B
-
-row.append(Result(fhatB, numB, power, percelsiz_B, totalsiz_B))
-
-if args.fstat_AB is not None:
-    phiAB = (args.m - 1) * (args.n - 1)
-    eta2AB = phiAB * args.fstat_AB / (phiAB * args.fstat_AB + phiE)
-    fhatAB = math.sqrt(eta2AB / (1 - eta2AB))
-    numAB = phiE / (phiAB + 1) + 1
-    power = fpow.solve_power(effect_size=fhatAB,
-                             k_groups=phiAB + 1,
-                             nobs=numAB,
-                             alpha=args.alpha)
-    percelsiz_AB = pwr_anova_pre(fhatAB,
-                                 phiAB,
-                                 ncells,
-                                 args.alpha,
-                                 args.power)
-    totalsiz_AB = ncells * percelsiz_AB
-    row.append(Result(fhatAB, numAB, power, percelsiz_AB, totalsiz_AB))
-
-writer = csv.DictWriter(sys.stdout, fieldnames=Result._fields)
+fieldnames = [
+    'fhat',
+    'corrected',
+    'power',
+    'cell',
+    'total',
+]
+writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
 writer.writeheader()
-writer.writerows(map(op.methodcaller('_asdict'), row))
+
+for (fstat, AnovaPower, f) in params:
+    if fstat is not None:
+        apwr = AnovaPower(fstat, *f(dimensions), args.n_total, args.alpha)
+        fieldvalues = [
+            apwr.fhat,
+            apwr.num,
+            float(apwr),
+            *apwr.pre(args.power),
+        ]
+
+        writer.writerow(dict(zip(fieldnames, fieldvalues)))
