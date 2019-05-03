@@ -59,7 +59,7 @@ eta2B = phiB * args.fstat_B / (phiB * args.fstat_B + phiE)
 fhatB = math.sqrt(eta2B / (1 - eta2B))
 numB = phiE / (phiB + 1) + 1
 power = fpow.solve_power(effect_size=fhatB,
-                         k_groups=args.m,
+                         k_groups=args.n,
                          nobs=numB,
                          alpha=args.alpha)
 percelsiz_B = pwr_anova_pre(fhatB, phiB, ncells, args.alpha, args.power)
