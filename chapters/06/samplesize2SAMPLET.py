@@ -25,7 +25,7 @@ class Sample:
 
         lamb = math.sqrt(self.n / 2) * delta
         phi = 2 * self.n - 2
-        w = st.t.ppf(1 - args.alpha / 2, phi)
+        w = st.t.ppf(1 - alpha / 2, phi)
         
         normalization = math.sqrt(1 + w ** 2 / (2 * phi))
         f = lambda x: (x * (1 - 1 / (4 * phi)) - lamb) / normalization
@@ -68,8 +68,7 @@ with mp.Pool(args.workers) as pool:
     else:
         min_delta = args.effect_size
 
-    norminv = lambda x: st.norm.ppf(x)
-    (zalpha, zbeta) = map(norminv, (1 - args.alpha / 2, args.beta))
+    (zalpha, zbeta) = map(st.norm.ppf, (1 - args.alpha / 2, args.beta))
     n = 2 * ((zalpha - zbeta) / min_delta) ** 2 + zalpha ** 2 / 4
 
     logging.debug(n)

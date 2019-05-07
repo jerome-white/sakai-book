@@ -3,9 +3,10 @@ import csv
 import math
 import logging
 import operator as op
-import scipy.stats as st
 import multiprocessing as mp
 from argparse import ArgumentParser
+
+import scipy.stats as st
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -24,7 +25,7 @@ class Sample:
 
         lamb = math.sqrt(self.n) * delta
         phi = self.n - 1
-        w = st.t.ppf(1 - args.alpha / 2, phi)
+        w = st.t.ppf(1 - alpha / 2, phi)
 
         normalization = math.sqrt(1 + w ** 2 / (2 * phi))
         f = lambda x: (x * (1 - 1 / (4 * phi)) - lamb) / normalization
@@ -67,8 +68,7 @@ with mp.Pool(args.workers) as pool:
     else:
         min_delta = args.effect_size
 
-    norminv = lambda x: st.norm.ppf(x)
-    (zalpha, zbeta) = map(norminv, (1 - args.alpha / 2, args.beta))
+    (zalpha, zbeta) = map(st.norm.ppf, (1 - args.alpha / 2, args.beta))
     n = ((zalpha - zbeta) / min_delta) ** 2 + zalpha ** 2 / 2
 
     logging.debug(n)

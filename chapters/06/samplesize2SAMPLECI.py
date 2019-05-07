@@ -4,7 +4,6 @@ import math
 import logging
 import operator as op
 import itertools as it
-import functools as ft
 from argparse import ArgumentParser
 
 import scipy.stats as st
@@ -14,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%H:%M:%S')
 
 class Sample:
-    def __init__(self, n, alpha, delta, sigma):
+    def __init__(self, n, alpha):
         self.n = n
         self.phi = 2 * self.n - 2
         self.t = st.t.ppf(1 - alpha / 2, self.phi)
@@ -31,7 +30,7 @@ class Sample:
 
 class Approximation(Sample):
     def __init__(self, n, alpha, delta, sigma):
-        super().__init__(n, alpha, delta, sigma)
+        super().__init__(n, alpha)
 
         self.ci.extend([
             self.t * (1 - 1 / (4 * self.phi)) / math.sqrt(self.n),
