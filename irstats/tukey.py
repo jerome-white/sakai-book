@@ -31,6 +31,7 @@ class Shuffler:
         self.agg = agg
 
     def __iter__(self):
+        np.random.seed()
         return self
 
     def __next__(self):
