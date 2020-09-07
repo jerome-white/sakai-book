@@ -30,8 +30,9 @@ class Shuffler:
         self.scores = scores.astable().values
         self.agg = agg
 
-    def __iter__(self):
         np.random.seed()
+
+    def __iter__(self):
         return self
 
     def __next__(self):
@@ -88,8 +89,6 @@ class RandomisedTukey:
         self.scores = scores
         self.B = B
         self.workers = workers if workers else mp.cpu_count()
-
-        self.shuffle = Shuffler(self.scores)
         self.info = {}
 
         if baseline is not None:
@@ -97,7 +96,6 @@ class RandomisedTukey:
 
         for i in self.scores.combinations():
             key = tuple(i.keys())
-
             difference = np.subtract(*map(np.mean, i.values()))
 
             (x1, x2) = i.values()
@@ -124,8 +122,9 @@ class RandomisedTukey:
 
     def do(self, b):
         c = cl.Counter()
+        shuffler = Shuffler(self.scores)
 
-        for (_, x) in zip(range(b), self.shuffle):
+        for (_, x) in zip(range(b), shuffler):
             d = x.max() - x.min()
             for i in self.scores.combinations():
                 systems = tuple(i.keys())
