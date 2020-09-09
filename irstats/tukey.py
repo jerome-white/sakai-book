@@ -92,7 +92,7 @@ class RandomisedTukey:
         self.info = {}
 
         if baseline is not None:
-            baseline = self.scores[baseline].values
+            baseline = self.scores[baseline].tolist()
 
         for i in self.scores.combinations():
             key = tuple(i.keys())
