@@ -22,7 +22,7 @@ class Scores:
         return (self
                 .df
                 .query('system == @key')
-                .filter(items=[index, 'scores'])
+                .filter(items=[index, 'score'])
                 .set_index(index)
                 .squeeze())
 
