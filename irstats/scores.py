@@ -19,9 +19,12 @@ class Scores:
 
     def __getitem__(self, key):
         index = 'topic'
-        view = self.df[self.df['system'] == key][[index, 'scores']]
-
-        return view.set_index(index).squeeze()
+        return (self
+                .df
+                .query('system == @key')
+                .filter(items=[index, 'scores'])
+                .set_index(index)
+                .squeeze())
 
     #
     #
