@@ -100,7 +100,7 @@ class RandomisedTukey:
 
             (x1, x2) = i.values()
             if baseline is None:
-                baseline = x1
+                baseline = x2
             effect = Glass(x1, x2, baseline)
 
             self.info[key] = self.Info(difference, effect)
