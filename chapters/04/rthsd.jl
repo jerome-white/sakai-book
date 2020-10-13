@@ -22,12 +22,19 @@ end
 
 args = cliargs()
 
+#
+# data aquisition
+#
 df = CSV.File(read(stdin)) |> DataFrame!
-@info "Exploring:" args["B"] / 2 ^ nrow(df)
+df = unstack(df, :topic, :system, :score)
+select!(df, Not(:topic))
+
 nsystems = ncol(df)
 raw = Matrix{Float64}(df)
 
+#
 # system means
+#
 sysmeans = Matrix{Float64}(undef, nsystems, nsystems)
 for (i, j) in combinations(collect(enumerate(mean(raw; dims=1))), 2)
     for (m, n) in (i, j)
@@ -38,14 +45,22 @@ for (i, j) in combinations(collect(enumerate(mean(raw; dims=1))), 2)
 end
 avgs = Matrix{Float64}(undef, nthreads(), nsystems)
 
+#
 # initialize counts
+#
 counts = SharedMatrix{Int}((nsystems, nsystems); init=0)
 
+#
 # create views of the data
+#
 data  = Array{Float64}(undef, nsystems, nrow(df), nthreads())
 data .= transpose(raw)
 
+#
 # begin!
+#
+@info "Exploring:" args["B"] / 2 ^ nrow(df)
+
 @threads for i in 1:args["B"]
     this = threadid()
     ptr = @view data[:,:,this]
@@ -64,6 +79,9 @@ data .= transpose(raw)
     end
 end
 
+#
+# report
+#
 cnames = [
     :S1_name,
     :S2_name,
@@ -80,7 +98,9 @@ for (i, (m, n)) in enumerate(combinations(1:nsystems, 2))
     results[i,:] = [
         sysnames[m],
         sysnames[n],
-        lhs, rhs, lhs - rhs,
+        lhs,
+        rhs,
+        lhs - rhs,
         pvalue,
     ]
 end
