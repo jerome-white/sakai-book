@@ -59,8 +59,6 @@ data .= transpose(raw)
 #
 # begin!
 #
-@info "Exploring:" args["B"] / 2 ^ nrow(df)
-
 @threads for i in 1:args["B"]
     this = threadid()
     ptr = @view data[:,:,this]
