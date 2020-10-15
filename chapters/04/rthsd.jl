@@ -73,7 +73,7 @@ data .= transpose(raw)
     end
 
     m = mean(ptr; dims=2)
-    d = reduce(-, map(x -> x(m), (maximum, minimum)))
+    d = maximum(m) - minimum(m)
     for (j, k) in combinations(1:nsystems, 2)
         if d >= sysmeans[j,k]
             counts[j,k,this] += 1
