@@ -43,7 +43,6 @@ for (i, j) in combinations(collect(enumerate(mean(raw; dims=1))), 2)
     ((a, x), (b, y)) = (i, j)
     sysmeans[a,b] = sysmeans[b,a] = abs(x - y)
 end
-avgs = Matrix{Float64}(undef, workers, nsystems)
 
 #
 # initialize counts
