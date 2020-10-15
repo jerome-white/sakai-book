@@ -37,9 +37,12 @@ raw = Matrix{Float64}(df)
 #
 sysmeans = Matrix{Float64}(undef, nsystems, nsystems)
 for (i, j) in combinations(collect(enumerate(mean(raw; dims=1))), 2)
+    # diagonal is the mean
     for (m, n) in (i, j)
         sysmeans[m,m] = n
     end
+
+    # off-diagonals are differences
     ((a, x), (b, y)) = (i, j)
     sysmeans[a,b] = sysmeans[b,a] = abs(x - y)
 end
