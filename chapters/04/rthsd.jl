@@ -95,7 +95,7 @@ cnames = [
 results = Matrix{Any}(undef, binomial(nsystems, 2), length(cnames))
 sysnames = names(df)
 for (i, (m, n)) in enumerate(combinations(1:nsystems, 2))
-    pvalue = sum(counts[m,n,:] + counts[n,m,:]) / args["B"]
+    pvalue = sum(sum, (counts[m,n,:], counts[n,m,:])) / args["B"]
     (lhs, rhs) = mean.(eachcol(df[!, [m,n]]))
     results[i,:] = [
         sysnames[m],
