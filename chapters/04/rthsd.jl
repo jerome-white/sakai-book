@@ -65,8 +65,8 @@ data .= transpose(raw)
 
 @threads for i in 1:args["B"]
     this = threadid()
+    ptr = view(data,:,:,this)
 
-    ptr = @view data[:,:,this]
     data[:,:,this] = mapslices(shuffle!, ptr; dims=1)
 
     m = mean(ptr; dims=2)
