@@ -65,12 +65,9 @@ data .= transpose(raw)
 
 @threads for i in 1:args["B"]
     this = threadid()
-    ptr = @view data[:,:,this]
 
-    for (j, c) in enumerate(eachcol(ptr))
-        shuffle!(c)
-        data[:,j,this] = c
-    end
+    ptr = @view data[:,:,this]
+    data[:,:,this] = mapslices(shuffle!, ptr; dims=1)
 
     m = mean(ptr; dims=2)
     d = maximum(m) - minimum(m)
