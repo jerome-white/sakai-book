@@ -25,7 +25,7 @@ workers = nthreads()
 #
 # data aquisition
 #
-df = CSV.File(read(stdin)) |> DataFrame!
+df = DataFrame(CSV.File(read(stdin)))
 df = unstack(df, :topic, :system, :score)
 select!(df, Not(:topic))
 
